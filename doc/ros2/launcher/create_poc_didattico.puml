@@ -1,0 +1,108 @@
+@startuml
+hide empty member
+hide circle
+
+class "create3_board-launch-py" as board {
+    namespace
+    ros_domain
+    backup_storage
+    x
+    y
+    z
+    yaw
+}
+class "create3_gazebo-launch-py" as gazebo {
+    use_rviz
+    use_gazebo_gui
+    spawn_dock
+    world_path
+    namespace
+    ros_domain
+    backup_storage
+    x
+    y
+    z
+    yaw
+    gazebo
+    visualize_rays
+}
+class "create3_gazebo_library-launch-py" as library {
+    x
+    y
+    z
+    yaw
+    use_rviz
+    use_gazebo_gui
+    spawn_dock
+    world_path
+    namespace
+    ros_domain
+    backup_storage
+    gazebo
+    visualize_rays
+}
+class "create3_navigation_spawn-launch-py" as navigation {
+    use_rviz
+    spawn_dock
+    namespace
+    ros_domain
+    backup_storage
+    x
+    y
+    z
+    yaw
+    gazebo
+    visualize_rays
+}
+class "create3_physical_robot-launch-py" as robot {
+    use_rviz
+    use_gazebo_gui
+    spawn_dock
+    world_path
+    namespace
+    ros_domain
+    backup_storage
+    x
+    y
+    z
+    yaw
+    gazebo
+    visualize_rays
+}
+class "create3_physical_spawn-launch-py" as robot_spawn {
+    use_rviz
+    spawn_dock
+    namespace
+    ros_domain
+    backup_storage
+    x
+    y
+    z
+    yaw
+    gazebo
+    visualize_rays
+}
+class "navigation_node_launch-py" as navigation_node {
+    x
+    y
+    namespace
+}
+
+gazebo --> "gazebo-launch-py"
+gazebo --> navigation
+
+library --> gazebo
+
+navigation --> "create3_nodes-launch-py"
+navigation --> "dock_description-launch-py"
+navigation --> "robot_description-launch-py"
+navigation --> "rviz2-launch-py"
+
+robot --> "gazebo-launch-py"
+robot --> robot_spawn
+
+robot_spawn --> "rviz2-launch-py"
+robot_spawn --> "robot_description-launch-py"
+robot_spawn --> "dock_description-launch-py"
+
+@enduml

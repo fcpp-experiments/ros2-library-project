@@ -1,0 +1,76 @@
+@startuml
+hide empty members
+hide circle
+
+class rclpy.Node
+
+package inbound_proxy {
+
+	InboundProxy --|> rclpy.Node
+	class InboundProxy {
+		string namespace
+		config config
+		subscriber file_message_subscription
+		message_received(msg: File)
+	}
+
+	class inbound_proxy.board_config {
+	  DEFAULT_QOS_TOPIC = 10
+	  POLL_WRITER_SECONDS = 0.5
+	  ROOT_BASE_PATH = "../../../../"
+	  TARGET_TOPIC = "/proxy/message_to_robot"
+	}
+
+    class inbound_proxy.server_config {
+      DEFAULT_QOS_TOPIC = 10
+      POLL_WRITER_SECONDS = 0.5
+      ROOT_BASE_PATH = "../../../../"
+      TARGET_TOPIC = "/proxy/message_from_robot"
+    }
+
+    class inbound_proxy.config {
+    }
+
+	note "Takes as launch arguments\nnamespace and ROS_DOMAIN_ID" as InboundNote
+
+	InboundNote -- InboundProxy
+	inbound_proxy.config --> inbound_proxy.server_config
+	inbound_proxy.config --> inbound_proxy.board_config
+	inbound_proxy.config -- InboundProxy: import
+
+}
+
+package outbound_proxy {
+
+	OutboundProxy --|> rclpy.Node
+	class OutboundProxy {
+		string namespace
+		timer timer_reader
+		timer timer_ap
+		publisher file_publisher
+		publish_file(input_path: string)
+		initialize_timers_and_publisher()
+		publish_feedback_reader()
+		publish_action_ap()
+		publish_goal()
+	}
+
+	class outbound_proxy.config {
+        DEFAULT_QOS_TOPIC = 10
+        POLL_WRITER_SECONDS = 0.5
+        ROBOT_PLACEHOLDER = "#ROBOT"
+        ROBOT_FEEDBACK_INPUT_PATH_FROM_READER = "from_robot/#ROBOT/to_web/feedback/"
+        ROBOT_ACTION_INPUT_PATH_FROM_AP = "from_ap/to_web/actions/#ROBOT/"
+        GOAL_INPUT_PATH_FROM_SERVER = "from_user/goals/"
+        STORAGE_BASE_PATH = "../../../../Storage/"
+        FROM_ROBOT_TOPIC = "proxy/message_from_robot"
+        TO_ROBOT_TOPIC = "proxy/message_to_robot"
+	}
+
+	note "Takes as launch arguments\nnamespace and ROS_DOMAIN_ID" as OutboundNote
+
+	OutboundNote -- OutboundProxy
+	outbound_proxy.config -- OutboundProxy: import
+}
+
+@enduml

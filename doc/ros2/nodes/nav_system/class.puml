@@ -1,0 +1,59 @@
+@startuml
+hide empty member
+hide circle
+
+package nav_system {
+	class PocNavigator {
+		subscriber goal_subscription
+		subscriber abort_subscription
+		service_client set_charge_battery_srv
+		action_client dock_action
+		action_client undock_action
+		timer timer
+		publish publisher_
+		BasicNavigator nav
+		bool navigating
+		--constants--
+		GOAL_REACHED\t=  0;
+		GOAL_ABORTED\t=  1;
+		GOAL_FAILED \t=  2;
+		GOAL_RUNNING\t=  3;
+		GOAL_UNKNOWN\t=  4;
+		GOAL_NONE   \t= -1;
+		--ROS2 parameters-
+		bool decrease_battery
+		---
+		__init__(namespace, nav):
+		get_coordinates():
+		new_goal(msg):
+		decrease_battery():
+		check_navigation_status():
+		abort_goal(msg):
+	}
+PocNavigator -- dependencies.Node
+PocNavigator -- dependencies.ActionClient
+PocNavigator -- dependencies.Duration
+PocNavigator -- dependencies.Int8
+PocNavigator -- dependencies.Float32
+PocNavigator -- dependencies.Odometry
+PocNavigator -- dependencies.PoseStamped [[https://github.com/ros2/common_interfaces/blob/humble/geometry_msgs/msg/PoseStamped.msg]]
+PocNavigator -- dependencies.Undock
+PocNavigator -- dependencies.Dock
+PocNavigator -- dependencies.SetCharge
+PocNavigator -- nav_system_interfaces.Goal
+PocNavigator -- dependencies.BasicNavigator
+PocNavigator -- dependencies.TaskResult
+
+}
+
+package nav_system_interfaces {
+	class Goal {
+		string type
+		float64 x
+		float64 y
+		float64 qz
+		float64 qw
+	}
+}
+
+@enduml

@@ -1,0 +1,17 @@
+<CycloneDDS>
+    <Domain>
+        <General>
+            <!-- wifi interface of laptop: change according to your system -->
+            <Interfaces>
+                <NetworkInterface name="wlp0s20f3" />
+            </Interfaces>
+            <AllowMulticast>true</AllowMulticast>
+        </General>
+        <Discovery>
+          <ParticipantIndex>auto</ParticipantIndex>
+          <MaxAutoParticipantIndex>100</MaxAutoParticipantIndex>
+        </Discovery>
+        <!-- uncomment to enable cyclonedds logging  -->
+        <!--<Tracing><Verbosity>config</Verbosity><OutputFile>stdout</OutputFile></Tracing>-->
+    </Domain>
+</CycloneDDS>

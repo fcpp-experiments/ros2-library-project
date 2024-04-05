@@ -1,0 +1,13 @@
+/**/build/**
+/**/install/**
+/PoC/AP_Engine/bin/**
+/PoC/AP_Engine/output/**
+/**/.idea/**
+/**/.vscode/**
+/**/__pycache__/**
+/Storage/from_*/**/to_*/feedback/**
+/Storage/from_*/**/to_*/actions/**
+/Navigation_System/log/**
+/Robot_Writer/**/log/**
+/Robot_Reader/**/log/**
+**tags
