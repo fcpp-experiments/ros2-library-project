@@ -66,32 +66,6 @@ namespace fcpp
             node.storage(node_ext_goal_update_info{})[string(ANY_GOALS)] = ext_status_tuple;
         }
 
-        //! @brief Check if is passed "diff_time_ms" milliseconds from time
-        FUN bool is_ms_passed_from(ARGS, long diff_time_ms, std::time_t stored_time) { CODE
-            if (stored_time == 0) {
-                return false;
-            }
-            std::time_t now = std::time(nullptr);
-            std::chrono::milliseconds millis_to_check(diff_time_ms);
-
-            std::chrono::milliseconds millis_computed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::from_time_t(now) - std::chrono::system_clock::from_time_t(stored_time));
-            return millis_computed >= millis_to_check;
-        }
-
-        //! @brief Check if is passed "diff_time_ms" milliseconds from last change status of robot
-        FUN bool has_ms_passed_from_last_update(ARGS, long diff_time_ms) { CODE
-            std::time_t stored_time = common::get<node_ext_goal_update_time>(node.storage(node_ext_goal_update_info{})[string(ANY_GOALS)]);
-            return is_ms_passed_from(CALL, diff_time_ms, stored_time);
-        }
-
-        //! @brief Check if is passed "diff_time_ms" milliseconds from last change status of a specific goal owned by a robot
-        FUN bool has_ms_passed_from_goal_update(ARGS, long diff_time_ms, std::string goal_code, feedback::GoalStatus goal_status) { CODE
-            external_status_tuple_type ext_status_tuple = node.storage(node_ext_goal_update_info{})[goal_code];
-            time_t stored_time                          = common::get<node_ext_goal_update_time>(ext_status_tuple);
-            feedback::GoalStatus stored_goal_status  = common::get<node_ext_goal_status>(ext_status_tuple);
-            return stored_goal_status == goal_status && is_ms_passed_from(CALL, diff_time_ms, stored_time);
-        }
-
         //! @brief Add current goal to computing map
         FUN void add_goal_to_computing_map(ARGS, goal_tuple_type const& g) { CODE
             node.storage(node_process_computing_goals{})[common::get<goal_code>(g)] = g;
@@ -129,25 +103,17 @@ namespace fcpp
             auto is_current_goal =  [&]()->bool {return node.storage(node_process_goal{}) == common::get<goal_code>(g);};
             auto is_goal_failed =   [&]()->bool {return node.storage(node_ext_goal_status{}) == feedback::GoalStatus::FAILED;};
             auto is_goal_running =  [&]()->bool {return node.storage(node_ext_goal_status{}) == feedback::GoalStatus::RUNNING;};
-            auto is_goal_reached =  [&]()->bool {return node.storage(node_ext_goal_status{}) == feedback::GoalStatus::REACHED;};
             auto is_docking =   [&]()->bool {return node.storage(node_ext_docking_status{}) == feedback::DockStatus::RUNNING;};
             auto is_process_selected = [&]()->bool {return node.storage(node_process_status{}) == ProcessingStatus::SELECTED;};
-            auto is_goal_defined = [&]()->bool {return common::get<goal_subcode>(g) != "";};
             auto is_goal_priority_0 = [&]()->bool {return common::get<goal_priority>(g) == 0;};
             auto exists_prioritised_goal = [&]()->bool {return check_if_other_prioritised_goal_exists(CALL, common::get<goal_code>(g));};
-            auto has_robot_pause_elapsed = [&]()->bool {return has_ms_passed_from_last_update(CALL, ROBOT_PAUSE_SEC*1000);};
-            auto is_robot_failed_elapsed = [&]()->bool {return has_ms_passed_from_goal_update(CALL, ROBOT_FAIL_TIMEOUT_SEC*1000, common::get<goal_code>(g), feedback::GoalStatus::FAILED);};
             if (
                     // node is failed for current goal and not already selected for something
                     (is_goal_failed() && is_current_goal() && !is_process_selected()) ||
-                    // or node is failed for past goal and it's reached the timeout from the last failure
-                    (is_robot_failed_elapsed() && !is_process_selected()) ||
                     // or it's already selected or running for another goal
                     ((is_goal_running() || is_process_selected()) && !is_current_goal()) ||
                     // or if it's processing not prioritised goal, but there are other some prioritised goals
                     (is_goal_priority_0() && exists_prioritised_goal()) ||
-                    // or it isn't passed necessary time from last completed goal (if configured)
-                    (ROBOT_PAUSE_SEC >= 0 && is_goal_reached() && !has_robot_pause_elapsed()) ||
                     // or it's returning to its initial position
                     is_docking()
                 ) {
@@ -338,9 +304,10 @@ namespace fcpp
                 std::cout << endl;
                 
                 *s = status::terminated_output; // stop propagation
-                return make_tuple(prev_rank, node.uid, prev_leader_for_round,
+                return make_tuple(
+                    prev_rank, node.uid, prev_leader_for_round,
                     make_tuple(prev_lazy_detection_leader, prev_lazy_detection_stable_for_round)
-                    );
+                );
         }
 
         //! @brief A robot has discharged the battery, so AP send a stop command
@@ -610,44 +577,6 @@ namespace fcpp
 
         //! @brief Read new goals from shared variable and insert them in NewGoalsList
         // TODO: check performance of using std::transform 
-        FUN void read_new_goals(ARGS, std::vector<goal_tuple_type>& NewGoalsList, string source) {
-            std::vector<InputGoal> InputGoalsBySource;
-            std::copy_if(InputGoalList.begin(), InputGoalList.end(), std::back_inserter(InputGoalsBySource), [&](InputGoal ig) {
-                return ig.source == source;
-            });
-            
-            std::lock_guard lgg(GoalMutex);
-            auto map_op = [](InputGoal ig) {
-              return common::make_tagged_tuple<goal_action, goal_code,
-                goal_pos_start_x, goal_pos_start_y, goal_orient_start_w,
-                goal_pos_end_x, goal_pos_end_y, goal_orient_end_w,
-                goal_source, goal_priority, goal_subcode>(
-                    ig.action,
-                    ig.goal_code,
-                    ig.pos_start_x,
-                    ig.pos_start_y,
-                    ig.orient_start_w,
-                    ig.pos_end_x,
-                    ig.pos_end_y,
-                    ig.orient_end_w,
-                    ig.source,
-                    ig.priority,
-                    ig.subcode
-                    );
-            };
-            std::transform(InputGoalsBySource.begin(), InputGoalsBySource.end(), std::back_inserter(NewGoalsList), map_op);
-
-            // delete only goals with source = node_ext_name
-            InputGoalList.erase(
-                std::remove_if(InputGoalList.begin(), InputGoalList.end(), [&](InputGoal ig) {
-                    return ig.source == source;
-                }),
-                InputGoalList.end()
-            );
-        }
-
-        //! @brief Read new goals from shared variable and insert them in NewGoalsList
-        // TODO: check performance of using std::transform 
         FUN void read_new_goals(ARGS, std::vector<goal_tuple_type>& NewGoalsList) {
             std::lock_guard lgg(GoalMutex);
             auto map_op = [](InputGoal ig) {
@@ -761,9 +690,9 @@ namespace fcpp
                         bool is_running = feedback::GoalStatus::RUNNING == rs.goal_status;
                         bool is_reached = feedback::GoalStatus::REACHED == rs.goal_status;
                         bool is_unknown = feedback::GoalStatus::UNKNOWN == rs.goal_status;
-                        bool is_failed = feedback::GoalStatus::FAILED == rs.goal_status;
+                        bool is_failed  = feedback::GoalStatus::FAILED == rs.goal_status;
                         bool is_aborted = feedback::GoalStatus::ABORTED == rs.goal_status;
-                        bool is_none = feedback::GoalStatus::NO_GOAL == rs.goal_status;
+                        bool is_none    = feedback::GoalStatus::NO_GOAL == rs.goal_status;
                         bool is_illegal = feedback::GoalStatus::ILLEGAL == rs.goal_status;
                         bool is_docking = feedback::DockStatus::RUNNING == rs.dock_status;
                         // change colour according with feedback from robots

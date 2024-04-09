@@ -120,9 +120,6 @@ namespace coordination {
     //! @brief Offset of "y" position of the node
     struct node_offset_pos_y {};
 
-    //! @brief Working of current node
-    struct node_is_working {};
-    
     //! @brief Action of the goal
     struct goal_action {};
 
