@@ -295,8 +295,8 @@ namespace fcpp
 
         //! @brief A robot has reached a goal and now try to terminate the process
         FUN rank_data_type ends_processed_goal(ARGS,
-            real_t prev_rank, int prev_leader_for_round, 
-            device_t prev_lazy_detection_leader, int prev_lazy_detection_stable_for_round, 
+            real_t current_rank, int current_leader_for_round, 
+            device_t current_lazy_detection_leader, int current_lazy_detection_stable_for_round, 
             node_type nt, goal_tuple_type const& g, status* s) { CODE
                 
                 std::cout << "Robot " << node.uid << " is trying to terminate goal " <<
@@ -305,8 +305,8 @@ namespace fcpp
                 
                 *s = status::terminated_output; // stop propagation
                 return make_tuple(
-                    prev_rank, node.uid, prev_leader_for_round,
-                    make_tuple(prev_lazy_detection_leader, prev_lazy_detection_stable_for_round)
+                    current_rank, node.uid, current_leader_for_round,
+                    make_tuple(current_lazy_detection_leader, current_lazy_detection_stable_for_round)
                 );
         }
 
@@ -318,29 +318,29 @@ namespace fcpp
         }
 
         //! @brief Update the counter of how many times a robot is the leader
-        // TODO: at the moment, the function re-use prev_leader_for_round to set the updated value.
-        FUN void update_leader_counter(ARGS, float percent_charge, real_t prev_rank, device_t prev_leader, int& prev_leader_for_round, node_type nt, goal_tuple_type const& g, status* s) { CODE
+        // TODO: at the moment, the function re-use current_leader_for_round to set the updated value.
+        FUN void update_leader_counter(ARGS, float percent_charge, real_t current_rank, device_t current_leader, int& current_leader_for_round, node_type nt, goal_tuple_type const& g, status* s) { CODE
             if (AP_ENGINE_DEBUG) {
-                std::cout << "Using rank received from neighbours for " << common::get<goal_code>(g)  << ": (" << prev_rank << "; " << prev_leader << ")"  << endl;
+                std::cout << "Using rank received from neighbours for " << common::get<goal_code>(g)  << ": (" << current_rank << "; " << current_leader << ")"  << endl;
             }
             if (nt == node_type::ROBOT && //i'm robot
-                prev_rank != INF && //i have computed something
+                current_rank != INF && //i have computed something
                 percent_charge > 0.0 && // i have sufficient battery
-                node.uid == prev_leader){ //i'm the best!
+                node.uid == current_leader){ //i'm the best!
 
                 // increment leader counter because i'm selected
-                prev_leader_for_round++;
+                current_leader_for_round++;
                 std::cout << "Node with id " << node.uid << " selected " <<
-                  common::get<goal_code>(g)  << " for " << prev_leader_for_round << " round " << endl;
+                  common::get<goal_code>(g)  << " for " << current_leader_for_round << " round " << endl;
             } else {
                 // resetting leader counter because i'm not selected
-                prev_leader_for_round = 0;
+                current_leader_for_round = 0;
             }
         }
 
         //! @brief Send a GOAL action to selected node and update the AP state machine of the robot to SELECTED
-        FUN void send_action_to_selected_node(ARGS, device_t prev_leader, goal_tuple_type const& g) { CODE
-            std::string robot_chosen = get_real_robot_name(CALL, prev_leader); 
+        FUN void send_action_to_selected_node(ARGS, device_t current_leader, goal_tuple_type const& g) { CODE
+            std::string robot_chosen = get_real_robot_name(CALL, current_leader); 
             std::cout << "Robot "   << robot_chosen  << " is chosen for goal " << common::get<goal_code>(g) << endl;
             std::cout << endl;
 
@@ -370,8 +370,8 @@ namespace fcpp
 
         //! @brief Detect if there are any other leaders near the elected robot.
         // If any exists, the worst node terminates his run.
-        // TODO: attention because at the moment "prev_leader_for_round" it is resetted when another leader was found, so use it can be tricky
-        FUN void detect_other_leaders(ARGS, tuple<real_t, device_t> new_rank_tuple, real_t rank, float percent_charge, real_t prev_rank, device_t prev_leader, int prev_leader_for_round, node_type nt, goal_tuple_type const& g, status* s) { CODE
+        // TODO: attention because at the moment "current_leader_for_round" it is resetted when another leader was found, so use it can be tricky
+        FUN void detect_other_leaders(ARGS, tuple<real_t, device_t> new_rank_tuple, real_t rank, float percent_charge, real_t current_rank, device_t current_leader, int current_leader_for_round, node_type nt, goal_tuple_type const& g, status* s) { CODE
             // get the leader of the next round
             real_t rank_new_leader      = get<0>(new_rank_tuple);
             device_t device_new_leader  = get<1>(new_rank_tuple);
@@ -383,7 +383,7 @@ namespace fcpp
                 // search if new leader found will send an action in the next round
                 if (device_new_leader != node.uid && // if i'm the old leader
                     rank_new_leader != INF) { // if new leader has a valid rank
-                    std::cout << "Detected for goal " << common::get<goal_code>(g) << " other leader: "   << device_new_leader  << "(" << rank_new_leader << ",0) different from leader " << node.uid << "(" << rank <<", " << prev_leader_for_round << ")"<< endl;
+                    std::cout << "Detected for goal " << common::get<goal_code>(g) << " other leader: "   << device_new_leader  << "(" << rank_new_leader << ",0) different from leader " << node.uid << "(" << rank <<", " << current_leader_for_round << ")"<< endl;
 
                         // abort myself if i have worst rank: worst means "other"<"me"
                         if (rank_new_leader < rank) {
@@ -427,20 +427,20 @@ namespace fcpp
             
             add_goal_to_computing_map(CALL, g);
             // make_tuple(real_t, device_t, int, make_tuple(device_t, int)):
-            // [0] -> rank of previous leader
-            // [1] -> node uid of previous leader
+            // [0] -> rank of current leader
+            // [1] -> node uid of current leader
             // [2] -> counter of how many rounds the leader is
             // [3] -> "lazy" leaders detection info
             //      [0] -> node uid of other leader detected
             //      [1] -> counter of how many rounds the detection info is stable
-            old(CALL, make_tuple(INF, node.uid, 0, make_tuple(node.uid, 0)), [&] (rank_data_type prev_tuple) {
+            old(CALL, make_tuple(INF, node.uid, 0, make_tuple(node.uid, 0)), [&] (rank_data_type current_rank_tuple) {
 
-                // retrieve data from previous round
-                real_t prev_rank = get<0>(prev_tuple);
-                device_t prev_leader = get<1>(prev_tuple);
-                int prev_leader_for_round = int(get<2>(prev_tuple));
-                device_t prev_lazy_detection_leader = get<0>(get<3>(prev_tuple));
-                int prev_lazy_detection_stable_for_round = int(get<1>(get<3>(prev_tuple)));
+                // retrieve data collected from previous round
+                real_t current_rank = get<0>(current_rank_tuple);
+                device_t current_leader = get<1>(current_rank_tuple);
+                int current_leader_for_round = int(get<2>(current_rank_tuple));
+                device_t current_lazy_detection_leader = get<0>(get<3>(current_rank_tuple));
+                int current_lazy_detection_stable_for_round = int(get<1>(get<3>(current_rank_tuple)));
 
                 // compute charge of battery in percent
                 float percent_charge = node.storage(node_battery_charge{})/100.0;
@@ -451,7 +451,7 @@ namespace fcpp
                     if (common::get<goal_code>(g) == node.storage(node_process_goal{}) && //i was running current goal in the process
                         common::get<goal_code>(g) == node.storage(node_ext_goal{}) && //the robot was running current goal
                         ProcessingStatus::TERMINATING == node.storage(node_process_status{})) { //but now i'm terminating
-                        return ends_processed_goal(CALL, prev_rank, prev_leader_for_round, prev_lazy_detection_leader, prev_lazy_detection_stable_for_round, nt, g, s);
+                        return ends_processed_goal(CALL, current_rank, current_leader_for_round, current_lazy_detection_leader, current_lazy_detection_stable_for_round, nt, g, s);
                     } 
 
                     // if battery is empty, then stop at current position
@@ -461,11 +461,11 @@ namespace fcpp
                     }
                 }
 
-                update_leader_counter(CALL, percent_charge, prev_rank, prev_leader, prev_leader_for_round, nt, g, s);
+                update_leader_counter(CALL, percent_charge, current_rank, current_leader, current_leader_for_round, nt, g, s);
                 
                 // compute rank for this node
-                real_t rank = INF;
-                rank = run_rank_node(CALL, percent_charge, nt, g);   
+                real_t computed_rank = INF;
+                computed_rank = run_rank_node(CALL, percent_charge, nt, g);   
 
                 real_t other_leader_rank = INF;
                 device_t other_leader_device = node.uid;
@@ -485,7 +485,7 @@ namespace fcpp
                         CALL, 
                         mux(
                             im_running_goal, 
-                            make_tuple(rank, node.uid),
+                            make_tuple(computed_rank, node.uid),
                             make_tuple(INF, node.uid)
                         ),
                         fcpp::coordination::graph_diameter
@@ -495,39 +495,39 @@ namespace fcpp
                 }
 
                 if (nt == node_type::ROBOT && //i'm robot
-                    prev_rank != INF && //i have computed something previously
-                    rank != INF && //and also now i have computed something
+                    current_rank != INF && //i have computed something
+                    computed_rank != INF && //and also now i have computed something
                     node.storage(node_process_status{}) == ProcessingStatus::IDLE && //i'm IDLE, so ready to go!
                     percent_charge > 0.0 && //i have sufficient battery
-                    node.uid == prev_leader && //i'm the best!
-                    prev_leader_for_round >= fcpp::coordination::graph_diameter){ //selected as leader for sufficient rounds
+                    node.uid == current_leader && //i'm the best!
+                    current_leader_for_round >= fcpp::coordination::graph_diameter){ //selected as leader for sufficient rounds
 
                     if (ALG_USED == ElectionAlgorithm::LAZY) {
-                        if (other_leader_device == prev_lazy_detection_leader) { // if it's equals to previous leader
+                        if (other_leader_device == current_lazy_detection_leader) { // if it's equals to current leader
                             // increment the counter
-                            prev_lazy_detection_stable_for_round++;
+                            current_lazy_detection_stable_for_round++;
                         }else {
                             // otherwise reset the counter
-                            prev_lazy_detection_stable_for_round = 0;
+                            current_lazy_detection_stable_for_round = 0;
                         }
                         
                         // use information about "other leaders" only if the value of "other_leader_rank" is stable:
                         // we are conservative, because the value can be "not aligned"
-                        if (prev_lazy_detection_stable_for_round >= fcpp::coordination::graph_diameter) { //the other leader is "stable" for N round
+                        if (current_lazy_detection_stable_for_round >= fcpp::coordination::graph_diameter) { //the other leader is "stable" for N round
                             if (other_leader_rank != INF) { // other leader computes valid rank 
-                                std::cout << "Block action goal for node " << node.uid << " with rank " << prev_rank << " for goal " << common::get<goal_code>(g) << " because there is another leader for consecutively " << prev_lazy_detection_stable_for_round << " round: (" << other_leader_device  << ", " << other_leader_rank << ")" << endl;
+                                std::cout << "Block action goal for node " << node.uid << " with rank " << current_rank << " for goal " << common::get<goal_code>(g) << " because there is another leader for consecutively " << current_lazy_detection_stable_for_round << " round: (" << other_leader_device  << ", " << other_leader_rank << ")" << endl;
                             } else {
-                                send_action_to_selected_node(CALL, prev_leader, g);
+                                send_action_to_selected_node(CALL, current_leader, g);
                             }
                         } else {
                             std::cout << "Skip lazy leader detection for node " << node.uid << " because it's not stable yet" << endl;  
                         }
                         
-                        // update previous other leader
-                        prev_lazy_detection_leader = other_leader_device;
+                        // update current leader detected
+                        current_lazy_detection_leader = other_leader_device;
                     } else {
                         // if LAZY mode is not enabled, send action immediately
-                        send_action_to_selected_node(CALL, prev_leader, g);
+                        send_action_to_selected_node(CALL, current_leader, g);
                     }
                 }
 
@@ -540,7 +540,7 @@ namespace fcpp
                 // send to neighbours result of diameter election and retrieve the best node for next round
                 tuple<real_t, device_t> new_rank_tuple = fcpp::coordination::diameter_election(
                     CALL, 
-                    make_tuple(rank, node.uid), 
+                    make_tuple(computed_rank, node.uid), // with rank of next round
                     fcpp::coordination::graph_diameter
                 );
 
@@ -550,15 +550,15 @@ namespace fcpp
 
                 if (nt == node_type::ROBOT && //i'm robot
                     ALG_USED == ElectionAlgorithm::GREEDY) { 
-                    //detect if there will be other leaders
-                    detect_other_leaders(CALL, new_rank_tuple, rank, percent_charge, prev_rank, prev_leader, prev_leader_for_round, nt, g, s);
+                    // detect if there will be other leaders in next round
+                    detect_other_leaders(CALL, new_rank_tuple, computed_rank, percent_charge, current_rank, current_leader, current_leader_for_round, nt, g, s);
                 }  
                 return make_tuple(  get<0>(new_rank_tuple), 
                                     get<1>(new_rank_tuple), 
-                                    prev_leader_for_round,
+                                    current_leader_for_round,
                                     make_tuple(
-                                        prev_lazy_detection_leader,
-                                        prev_lazy_detection_stable_for_round
+                                        current_lazy_detection_leader,
+                                        current_lazy_detection_stable_for_round
                                     )
                         );
             });
