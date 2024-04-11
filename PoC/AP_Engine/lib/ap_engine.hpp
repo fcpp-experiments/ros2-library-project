@@ -84,12 +84,7 @@ namespace fcpp
                     common::get<goal_code>(p.second) != current_goal_code &&
                     common::get<goal_priority>(p.second) > 0;
             });
-            if (found != map.end()) {
-                return true;
-            } else {
-                // not found
-                return false;
-            }
+            return found != map.end();
         }
 
         //! @brief Compute new rank for node, using battery and distance from goal
@@ -480,15 +475,27 @@ namespace fcpp
                             node.storage(node_process_goal{}) == common::get<goal_code>(g) && // for the current goal
                             node.storage(node_ext_goal_status{}) != feedback::GoalStatus::ABORTED // and different status from aborted
                     );
-                    // use diameter_election to check other leaders
-                    tuple<real_t, device_t> tuple_leaders = fcpp::coordination::diameter_election(
-                        CALL, 
+                    // // use diameter_election to check other leaders
+                    // tuple<real_t, device_t> tuple_leaders = fcpp::coordination::diameter_election(
+                    //     CALL, 
+                    //     mux(
+                    //         im_running_goal, 
+                    //         make_tuple(computed_rank, node.uid),
+                    //         make_tuple(INF, node.uid)
+                    //     ),
+                    //     fcpp::coordination::graph_diameter
+                    // );
+                    
+                    // use classic nbr to check other leaders
+                    tuple<real_t, device_t> tuple_leaders = nbr(CALL, 
                         mux(
                             im_running_goal, 
                             make_tuple(computed_rank, node.uid),
                             make_tuple(INF, node.uid)
-                        ),
-                        fcpp::coordination::graph_diameter
+                        ), 
+                        [&](field<tuple<real_t, device_t>> f) {
+                            return min_hood(CALL, f);
+                        }
                     );
                     other_leader_rank = get<0>(tuple_leaders);
                     other_leader_device = get<1>(tuple_leaders);
@@ -530,11 +537,18 @@ namespace fcpp
                     blink_computing_color(CALL, n_round);
                 }
                 
-                // send to neighbours result of diameter election and retrieve the best node for next round
-                tuple<real_t, device_t> new_rank_tuple = fcpp::coordination::diameter_election(
-                    CALL, 
-                    make_tuple(computed_rank, node.uid), // with rank of next round
-                    fcpp::coordination::graph_diameter
+                // use diameter_election: send to neighbours result of diameter election and retrieve the best node for next round
+                // tuple<real_t, device_t> new_rank_tuple = fcpp::coordination::diameter_election(
+                //     CALL, 
+                //     make_tuple(computed_rank, node.uid), // with rank of next round
+                //     fcpp::coordination::graph_diameter
+                // );
+                // use classic nbr: send to neighbours result of diameter election and retrieve the best node for next round
+                tuple<real_t, device_t> new_rank_tuple = nbr(CALL, 
+                    make_tuple(computed_rank, node.uid), 
+                    [&](field<tuple<real_t, device_t>> f) {
+                        return min_hood(CALL, f);
+                    }
                 );
 
                 if (AP_ENGINE_DEBUG) {
@@ -855,7 +869,8 @@ namespace fcpp
         struct main_t : public export_list<
             any_connection_t,
             spawn_t<goal_tuple_type, status>, 
-            diameter_election_t<tuple<real_t, device_t>>
+            diameter_election_t<tuple<real_t, device_t>>,
+            nbr_t<tuple<real_t, device_t>>
         > {};
 
     }
