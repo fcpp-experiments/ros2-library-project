@@ -386,7 +386,7 @@ namespace fcpp
                     std::cout << "Detected for goal " << common::get<goal_code>(g) << " other leader: "   << device_new_leader  << "(" << rank_new_leader << ",0) different from leader " << node.uid << "(" << rank <<", " << current_leader_for_round << ")"<< endl;
 
                         // abort myself if i have worst rank: worst means "other"<"me"
-                        if (rank_new_leader < rank) {
+                        if (rank_new_leader < rank || (rank_new_leader == rank && device_new_leader < node.uid)) {
                             std::cout << "Abort current leader: "   << node.uid  << " from goal " << common::get<goal_code>(g) << endl;
                             send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);
 
@@ -499,8 +499,7 @@ namespace fcpp
                     computed_rank != INF && //and also now i have computed something
                     node.storage(node_process_status{}) == ProcessingStatus::IDLE && //i'm IDLE, so ready to go!
                     percent_charge > 0.0 && //i have sufficient battery
-                    node.uid == current_leader && //i'm the best!
-                    current_leader_for_round >= fcpp::coordination::graph_diameter){ //selected as leader for sufficient rounds
+                    node.uid == current_leader){ //i'm the best!
 
                     if (ALG_USED == ElectionAlgorithm::LAZY) {
                         if (other_leader_device == current_lazy_detection_leader) { // if it's equals to current leader
@@ -511,18 +510,12 @@ namespace fcpp
                             current_lazy_detection_stable_for_round = 0;
                         }
                         
-                        // use information about "other leaders" only if the value of "other_leader_rank" is stable:
-                        // we are conservative, because the value can be "not aligned"
-                        if (current_lazy_detection_stable_for_round >= fcpp::coordination::graph_diameter) { //the other leader is "stable" for N round
-                            if (other_leader_rank != INF) { // other leader computes valid rank 
-                                std::cout << "Block action goal for node " << node.uid << " with rank " << current_rank << " for goal " << common::get<goal_code>(g) << " because there is another leader for consecutively " << current_lazy_detection_stable_for_round << " round: (" << other_leader_device  << ", " << other_leader_rank << ")" << endl;
-                            } else {
-                                send_action_to_selected_node(CALL, current_leader, g);
-                            }
+                        if (other_leader_rank != INF) { // other leader computes valid rank 
+                            std::cout << "Block action goal for node " << node.uid << " with rank " << current_rank << " for goal " << common::get<goal_code>(g) << " because there is another leader for consecutively " << current_lazy_detection_stable_for_round << " round: (" << other_leader_device  << ", " << other_leader_rank << ")" << endl;
                         } else {
-                            std::cout << "Skip lazy leader detection for node " << node.uid << " because it's not stable yet" << endl;  
+                            send_action_to_selected_node(CALL, current_leader, g);
                         }
-                        
+
                         // update current leader detected
                         current_lazy_detection_leader = other_leader_device;
                     } else {
@@ -576,7 +569,6 @@ namespace fcpp
         }
 
         //! @brief Read new goals from shared variable and insert them in NewGoalsList
-        // TODO: check performance of using std::transform 
         FUN void read_new_goals(ARGS, std::vector<goal_tuple_type>& NewGoalsList) {
             std::lock_guard lgg(GoalMutex);
             auto map_op = [](InputGoal ig) {
