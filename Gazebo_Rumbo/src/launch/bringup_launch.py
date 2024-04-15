@@ -161,8 +161,8 @@ def generate_launch_description():
 
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
-    #ld.add_action(paramfile_log)
-    #ld.add_action(mapfile_log)
+    ld.add_action(paramfile_log)
+    ld.add_action(mapfile_log)
 
     # Declare the launch options
     ld.add_action(declare_namespace_cmd)

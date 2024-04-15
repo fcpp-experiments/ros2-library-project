@@ -185,8 +185,8 @@ def generate_launch_description():
                     'autostart': 'True',
                     'use_sim_time': 'True',
                     'params_file': params_file,
-                    'use_composition': 'False',
-                    'use_respawn': use_respawn}.items()),
+                    'use_composition': 'True',
+                    'use_respawn': 'False'}.items()),
                 Node(
                     package='tf2_ros',
                     executable='static_transform_publisher',

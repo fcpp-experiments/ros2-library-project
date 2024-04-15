@@ -165,13 +165,15 @@ def generate_launch_description():
                 package='nav2_map_server',
                 plugin='nav2_map_server::MapServer',
                 name='map_server',
-                parameters=[params_file],
+                parameters=[{'use_sim_time':use_sim_time},
+                            {'yaml_filename':map_yaml_file},
+                            {'save_map_timeout': 5.0}],
                 remappings=remappings),
             ComposableNode(
                 package='nav2_amcl',
                 plugin='nav2_amcl::AmclNode',
                 name='amcl',
-                parameters=[params_file],
+                parameters=[configured_params],
                 remappings=remappings),
             ComposableNode(
                 package='nav2_lifecycle_manager',
