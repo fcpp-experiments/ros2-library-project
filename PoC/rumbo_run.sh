@@ -23,6 +23,7 @@ initialize_components "${components[@]}"
 
 world_file="use_case_resources/library/library.sdf"
 
+GAZEBO_MODEL_PATH=$(pwd) \
 ROBOTS_YAML=use_case_resources/library/robots.yaml \
 ros2 launch rumbo_gazebo rumbo_library.launch.py use_proxies:=false \
 world:="$world_file" map:=use_case_resources/library/library_map.yaml \
