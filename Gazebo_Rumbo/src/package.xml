@@ -8,7 +8,6 @@
   </description>
   <maintainer email="giordano.scarso@unito.it">Giordano Scarso</maintainer>
   <license>GPL-3.0</license>
-  <url type="website">http://turtlebot3.robotis.com</url>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>gazebo_ros_pkgs</depend>
   <depend>geometry_msgs</depend>

@@ -30,7 +30,7 @@ from nav2_common.launch import RewrittenYaml
 def generate_launch_description():
     # Get the launch directory
     bringup_dir = get_package_share_directory('nav2_bringup')
-    turtlebot_gazebo_dir = get_package_share_directory('rumbo_gazebo')
+    rumbo_gazebo_dir = get_package_share_directory('rumbo_gazebo')
     launch_dir = os.path.join(bringup_dir, 'launch')
 
     # Create the launch configuration variables
@@ -85,7 +85,7 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
-        default_value=os.path.join(turtlebot_gazebo_dir, 'maps', 'library-new.yaml'),
+        default_value=os.path.join(rumbo_gazebo_dir, 'maps', 'library-new.yaml'),
         description='Full path to map yaml file to load')
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -131,7 +131,7 @@ def generate_launch_description():
             output='screen'),
 
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(os.path.join(turtlebot_gazebo_dir, 'launch',
+            PythonLaunchDescriptionSource(os.path.join(rumbo_gazebo_dir, 'launch',
                                                        'localization_launch.py')),
             condition=IfCondition(PythonExpression(['not ', slam])),
             launch_arguments={'namespace': namespace,
