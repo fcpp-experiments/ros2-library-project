@@ -2,10 +2,10 @@
 	path = PoC/AP_Engine/fcpp
 	url = https://github.com/fcpp/fcpp.git
 [submodule "gazebo_ros_batteries"]
-	path = gazebo_ros_batteries
+	path = Battery/src/gazebo_ros_batteries
 	url = git@github.com:Gior26/gazebo_ros_batteries.git
 [submodule "battery_services"]
-	path = battery_services
+	path = Battery/src/battery_services
 	url = git@github.com:Gior26/battery_services.git
 [submodule "Navigation_System/src/ldlidar_stl_ros2"]
 	path = Navigation_System/src/ldlidar_stl_ros2

@@ -16,8 +16,7 @@ components=(
     "Robot_Reader"
     "Robot_Writer"
     "Gazebo_Rumbo"
-    "gazebo_ros_batteries"
-    "battery_services"
+    "Battery"
 )
 
 initialize_components "${components[@]}"
