@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# Only if needed
-./make.sh clean
+CLEAN=${1:-false}
+
+if [ "$CLEAN" = "true" ]; then
+    echo "Cleaning..."
+    ./make.sh clean
+fi
 
 echo "Compiling target ap_engine..."
 

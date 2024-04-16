@@ -55,13 +55,18 @@ enter the folders and follow compilation instructions.
 
 ## AP Engine
 
-To compile and execute the AP engine , you should
-: 
+To compile and execute the AP engine , you should: 
 - follow instructions on [/PoC/AP_Engine/README.MD](/PoC/AP_Engine/README.MD)
 - or run on a new terminal window (but with logs deleted after each round):
 ```bash
 cd PoC/AP_Engine
 ./ap_run.sh
+```
+
+You can also pass as first argument (`true` or `false`) to clean build directory, as below:
+```bash
+cd PoC/AP_Engine
+./ap_run.sh true
 ```
 
 ## Use case
