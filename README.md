@@ -78,11 +78,11 @@ ros2 run nav2_map_server map_saver_cli -f map-filename
 
 ### AP Engine
 
-To compile and execute the AP engine on a new terminal window:
-
+To compile and execute the AP engine , you should
+: 
+- follow instructions on [/PoC/AP_Engine/README.MD](/PoC/AP_Engine/README.MD)
+- or run on a new terminal window (but with logs deleted after each round):
 ```bash
 cd PoC/AP_Engine
-./make.sh build -O ap_engine_embedded
-cd bin
-AP_NODE_UID=1 AP_NET_BRADDR_IP_ADDR=0.0.0.0 ./run/ap_engine_embedded
+./ap_run.sh
 ```
