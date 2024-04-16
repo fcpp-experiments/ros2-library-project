@@ -1,0 +1,11 @@
+string type
+string goal_id
+float64 pos_start_x
+float64 pos_start_y
+float64 pos_start_qz
+float64 pos_start_qw
+float64 pos_end_x
+float64 pos_end_y
+float64 pos_end_qz
+float64 pos_end_qw
+uint32  step

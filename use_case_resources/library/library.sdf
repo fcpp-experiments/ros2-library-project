@@ -14,43 +14,11 @@
       </ode>
     </physics>
 	  <scene>
-		  <ambient>1 1 1 1</ambient>
+		  <ambient>0.4 0.4 0.4 1</ambient>
 		  <background>0.3 0.7 0.9 1</background>
 		  <shadows>0</shadows>
 		  <grid>1</grid>
 	  </scene>
-    <model name="chair1">
-      <pose>2.20 2.0 0  0 0 1.77</pose>
-      <static>true</static>
-      <link name="body">
-        <visual name="visual">
-          <geometry>
-            <mesh><uri>model://library/chair.dae</uri></mesh>
-          </geometry>
-        </visual>
-        <collision name="collision">
-          <geometry>
-            <mesh><uri>model://library/chair-collision.dae</uri></mesh>
-          </geometry>
-        </collision>
-      </link>
-    </model>
-    <model name="chair2">
-      <pose>2.20 4.0 0  0 0 1.37</pose>
-      <static>true</static>
-      <link name="body">
-        <visual name="visual">
-          <geometry>
-            <mesh><uri>model://library/chair.dae</uri></mesh>
-          </geometry>
-        </visual>
-        <collision name="collision">
-          <geometry>
-            <mesh><uri>model://library/chair-collision.dae</uri></mesh>
-          </geometry>
-        </collision>
-      </link>
-    </model>
     <model name="library">
       <pose>0 0 0  0 0 0</pose>
       <static>true</static>
@@ -70,29 +38,34 @@
           </geometry>
         </collision>
       </link>
-      <link name="Fan2">
-          <pose>5.0154 -0.2952 6.12 0 0 0</pose>
-          <light type="directional" name="fan_light">
-              <diffuse>1 1 1 1</diffuse>
-              <specular>0.3 0.3 0.3 1</specular>
-              <attenuation>
-                  <range>50</range>
-                  <linear>0</linear>
-                  <constant>0</constant>
-                  <quadratic>0</quadratic>
-              </attenuation>
-              <cast_shadows>true</cast_shadows>
-              <intensity>1.0</intensity>
-          </light>
-      </link>
-      <joint name="world_joint" type="fixed">
+      <!--joint name="world_joint" type="fixed">
           <parent>world</parent>
           <child>main</child>
-      </joint>
-      <joint name="light_joint" type="fixed">
-          <parent>main</parent>
-          <child>Fan2</child>
-      </joint>
+      </joint-->
     </model>
+    <light type="directional" name="light1">
+      <pose>1.5 6.0 3.0 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.3 0.3 0.3 1</specular>
+      <attenuation>
+        <range>20</range>
+        <linear>0.01</linear>
+        <constant>0.50</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+    <light type="directional" name="light2">
+      <pose>1.5 1.0 3.0 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.3 0.3 0.3 1</specular>
+      <attenuation>
+        <range>20</range>
+        <linear>0.01</linear>
+        <constant>0.50</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
   </world>
 </sdf>
