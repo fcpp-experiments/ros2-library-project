@@ -141,14 +141,19 @@ def generate_launch_description():
     with open(os.path.abspath(os.environ['ROBOTS_YAML']), 'r') as f:
         robots = yaml.safe_load(f)
     for robot in robots:
-        params_file = RewrittenYaml(
+        rewritten_file = RewrittenYaml(
                 source_file=os.path.join(gazebo_bringup_dir, 'params', 'nav2_multirumbo_params_template.yaml'),
-                param_rewrites={ 'topic': '/'+robot['name']+'/scan',
+                param_rewrites={ 
+                    'topic': '/'+robot['name']+'/scan',
                     'x': str(robot['x_pose']),
                     'y': str(robot['y_pose']),
                     'yaw': str(robot['yaw']),
                     'z': str(robot['z_pose']) },
                 convert_types=True)
+        params_file = ReplaceString(source_file=rewritten_file,
+                replacements={
+                    'template_ir_topic': '/'+robot['name']+'/ir',
+                    })
 
         group = GroupAction(
                 [
@@ -194,6 +199,14 @@ def generate_launch_description():
                     namespace=TextSubstitution(text=robot['name']),
                     remappings=remappings,
                     arguments=['0.14','0.0','0.12','0','0','0','base_link','base_laser']
+                    ),
+                Node(
+                    package='tf2_ros',
+                    executable='static_transform_publisher',
+                    name='base_ir_to_laser',
+                    namespace=TextSubstitution(text=robot['name']),
+                    remappings=remappings,
+                    arguments=['0.16','0.0','0.06','0','0','0','base_link','base_ir']
                     ),
                 Node(
                     package='gazebo_ros',

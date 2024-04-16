@@ -153,8 +153,13 @@ local_costmap:
       height: 3
       resolution: 0.02
       robot_radius: 0.22
-      plugins: ["voxel_layer", "inflation_layer"]
+      plugins: ["voxel_layer", "range_layer", "inflation_layer"]
       transform_tolerance: 1.0
+      range_layer:
+        plugin: "nav2_costmap_2d::RangeSensorLayer"
+        enabled: True
+        topics: ["ir"],
+        input_sensor_type: VARIABLE
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 2.58
