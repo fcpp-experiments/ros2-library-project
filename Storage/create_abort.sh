@@ -12,4 +12,4 @@ abort_file="from_user/goals/abort_$timestamp.txt"
 
 echo "ABORT;$goal_id;0.0;0.0;0.0;0.0;0.0;0.0;" > "$abort_file"
 
-echo "File created $abort_file with id: $goal_id"
+echo "File created $abort_file, with goal_id: $goal_id"

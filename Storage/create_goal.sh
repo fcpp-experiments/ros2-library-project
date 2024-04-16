@@ -13,4 +13,4 @@ goal_file="from_user/goals/goal_$timestamp.txt"
 
 echo "GOAL;$goal_id;0.0;0.0;0.0;$goal_info" > "$goal_file"
 
-echo "File created $goal_file with id: $goal_id"
+echo "File created $goal_file, with goal_id: $goal_id"
