@@ -374,8 +374,11 @@ class Navigator(Node):
         Cancel the current goal.
         Subscribed to ap_abort.
         """
-        self.get_logger().info('Aborting goal: "%s"' % self.nav)
-        self.nav.cancelTask()
+        if (self.current_goal_id == msg.goal_id):
+            self.get_logger().info('Aborting goal: "%s"' % msg.goal_id)
+            self.nav.cancelTask()
+        else:
+            self.get_logger().info('Ignore abort goal: "%s"' % msg.goal_id)
 
 def main(args=sys.argv):
     rclpy.init(args=args)

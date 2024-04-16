@@ -10,4 +10,6 @@
 /Navigation_System/log/**
 /Robot_Writer/**/log/**
 /Robot_Reader/**/log/**
+/Battery/**/log/**
+/Gazebo_Rumbo/**/log/**
 **tags

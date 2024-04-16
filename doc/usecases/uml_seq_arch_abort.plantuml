@@ -2,91 +2,38 @@
 !pragma teoz true
 autonumber
 
-actor User as user
+actor User as user #LightPink
+participant "Storage" as app_storage #SkyBlue
+participant AP_Engine as ap_engine #LightCyan
+participant Robot_Writer as robot_writer #LightGreen
+queue ap_abort as ap_abort #LightYellow
+control Navigation_System as navigation_system #Moccasin
+participant Robot_reader as robot_reader #Orange
+actor Robot as robot #Grey
 
-box "Server" #Azure
-    box "Web Application" #LightYellow
-    participant Sensors_Web as web_application
-    end box
-
-    box "Java Server" #LightBlue
-    participant Sensors_API as java_server_api
-    participant Sensors_Service as java_server_service
-    database Sensors_DB as java_server_db
-    end box
-
-    box "Server Proxies" #Moccasin
-    participant Server_Inbound_Proxy as server_inbound_proxy_ros2
-    participant Server_Outbound_Proxy as server_outbound_proxy_ros2
-    end box
-end box
-
-box "ROS2 DDS" #LightGreen
-queue message_to_robot as message_to_robot
-queue message_from_robot as message_from_robot
-end box
-
-box "Board" #OldLace
-    box "Proxies" #LightSalmon
-    participant Board_Inbound_Proxy as inbound_proxy_ros2
-    participant Board_Outbound_Proxy as outbound_proxy_ros2
-    end box
-
-    participant AP_Engine as ap_engine
-    participant Robot_Writer as robot_writer
-    queue ap_abort as ap_abort
-    control Navigation_System as navigation_system
-    participant Robot_reader as robot_reader
-end box
-
-actor Robot as robot
-
-user -> web_application: Searches an item
-web_application -> java_server_api: POST /goals
+user -> user: Choose to ABORT a current goal
+user -> app_storage: Creates and deposits goal files
 note top
     with action=ABORT
 end note
-java_server_api -> java_server_service: Updates goal
 
-group Searches previous goal and send abort to robots
-    activate java_server_service
-    java_server_service -> java_server_db: Fetch and update goal
-    java_server_service -> java_server_service: Writes file to Storage
-    note top
-        folder: from_user/goals
-    end note
-end
-deactivate java_server_service
-java_server_service --> java_server_api
-java_server_api --> web_application
-web_application --> user
-
-server_outbound_proxy_ros2 -> message_to_robot: Reads file and sends FileMessage to all boards
-
-message_to_robot -> inbound_proxy_ros2: Reads new goal
-inbound_proxy_ros2 -> ap_engine: Creates file with new goal (ABORT)
+app_storage -> ap_engine: Reads new goal
 activate ap_engine
     note top
         folder: from_user/goals
     end note
     ap_engine -> ap_engine: Select robots reaching selected goal
-    ap_engine -> robot_writer: Creates file with new action=ABORT
-    note top
-        folder: from_ap/to_robot/actions/#ROBOT
-    end note
-    ap_engine -> outbound_proxy_ros2: Creates file with new action=ABORT
+    ap_engine -> app_storage: Creates file with new action=ABORT
     note bottom
         folder: from_ap/to_web/actions/#ROBOT
     end note
-    deactivate ap_engine
-robot_writer -> ap_abort: Creates ROS2 message with new goal
+deactivate ap_engine
+
+app_storage -> robot_writer: Parse action file
+robot_writer -> ap_abort: Creates ROS2 message with new action=ABORT
 ap_abort -> navigation_system: Reads abort from ROS2 topic
 navigation_system -> robot: Sends to robot command to cancel all current goals
-note top
-    (using nav2 or custom navigator)
-end note
 
 == ... robot stops ... ==
 
 @enduml
-

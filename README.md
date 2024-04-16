@@ -33,56 +33,59 @@ apt install python3-colcon-common-extensions python3-vcstool python3-rosdep ros-
 # Cyclone DDS
 apt install ros-humble-cyclonedds ros-humble-rmw-cyclonedds-cpp
 ```
-___
 
-# TODO
+You should now run install script to build all ROS2 components:
+```bash
+cd PoC
+./install.sh
+```
 
-### Simulation
+# Run
+
+## Simulation
 
 To launch a simulation execute from the root of the repository:
 
 ```bash
-./PoC/turtlebot3_run.sh
+./PoC/rumbo_run.sh
 ```
 
 The script will list the components that need to be compiled to run,
 enter the folders and follow compilation instructions.
 
-#### Simulated SLAM
+## AP Engine
 
-To perform a SLAM of a simulated environment use the following command:
-
-```bash
-WORLD_PATH=/home/ws/NODES/use_case_resources/hospital/world.sdf ros2 launch turtlebot3_gazebo turtlebot3_slam.launch.py y_pose:=3.0 x_pose:=1.0
-```
-
-This will load the world specified in WORLD\_PATH spawning a Turtlebot3 in position (x\_pose, y\_pose).
-
-On another terminal launch the mapping node:
-
-```bash
-TURTLEBOT3_MODEL=burger ros2 launch turtlebot3_cartographer cartographer.launch.py use_sim_time:=True
-```
-
-On another terminal launch the keyboard control node:
-
-```bash
-TURTLEBOT3_MODEL=burger ros2 run turtlebot3_teleop teleop_keyboard
-```
-
-When the map is complete save it using the following command:
-
-```bash
-ros2 run nav2_map_server map_saver_cli -f map-filename
-```
-
-### AP Engine
-
-To compile and execute the AP engine on a new terminal window:
-
+To compile and execute the AP engine , you should
+: 
+- follow instructions on [/PoC/AP_Engine/README.MD](/PoC/AP_Engine/README.MD)
+- or run on a new terminal window (but with logs deleted after each round):
 ```bash
 cd PoC/AP_Engine
-./make.sh build -O ap_engine_embedded
-cd bin
-AP_NODE_UID=1 AP_NET_BRADDR_IP_ADDR=0.0.0.0 ./run/ap_engine_embedded
+./ap_run.sh
+```
+
+## Use case
+
+### Goal
+To create a new goal with *X=$POS_X, Y=$POS_Y, YAW=$ORIENT* (all coordinates are float values), you can run:
+```bash
+cd Storage
+./create_goal.sh "$POS_X;$POS_Y;$ORIENT"
+```
+
+example:
+```
+./create_goal.sh "1.0;2.0;3.14"
+```
+
+### Abort
+To abort a current with *ID=$GOAL_CODE*, you can run:
+```bash
+cd Storage
+./create_abort.sh $GOAL_CODE
+```
+
+example:
+```
+./create_abort.sh GOAL-123456789
 ```
