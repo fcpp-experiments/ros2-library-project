@@ -2,147 +2,53 @@
 !pragma teoz true
 autonumber
 
-actor User as user
+actor User as user #LightPink
+participant "Storage" as app_storage #SkyBlue
+participant AP_Engine as ap_engine #LightCyan
+participant Robot_Writer as robot_writer #LightGreen
+queue ap_goal as ap_goal #LightYellow
+control Navigation_System as navigation_system #Moccasin
+participant Robot_reader as robot_reader #Orange
+actor Robot as robot #Grey
 
-box "Server" #Azure
-    box "Web Application" #LightYellow
-    participant Sensors_Web as web_application
-    end box
-
-    box "Java Server" #LightBlue
-    participant Sensors_API as java_server_api
-    participant Sensors_Service as java_server_service
-    database Sensors_DB as java_server_db
-    end box
-
-    box "Server Proxies" #Moccasin
-    participant Server_Inbound_Proxy as server_inbound_proxy_ros2
-    participant Server_Outbound_Proxy as server_outbound_proxy_ros2
-    end box
-end box
-
-box "ROS2 DDS" #LightGreen
-queue message_to_robot as message_to_robot
-queue message_from_robot as message_from_robot
-end box
-
-box "Board" #OldLace
-    box "Proxies" #LightSalmon
-    participant Board_Inbound_Proxy as inbound_proxy_ros2
-    participant Board_Outbound_Proxy as outbound_proxy_ros2
-    end box
-
-    participant AP_Engine as ap_engine
-    participant Robot_Writer as robot_writer
-    queue ap_goal as ap_goal
-    control Navigation_System as navigation_system
-    participant Robot_reader as robot_reader
-end box
-
-actor Robot as robot
-
-user -> web_application: Searches an item
-web_application -> java_server_api: POST /goals
+user -> app_storage: Creates and deposits goal files
 note top
     with action=GOAL
 end note
-java_server_api -> java_server_service: Creates goal
 
-group Searches item and send goal to robots
-    activate java_server_service
-    java_server_service -> java_server_service: Retrieves (x,y) of the item
-    java_server_service -> java_server_db: Saves new goal
-    java_server_service -> java_server_service: Writes file to Storage
-    note top
-        folder: from_user/goals
-    end note
-end
-deactivate java_server_service
-java_server_service --> java_server_api
-java_server_api --> web_application
-web_application --> user
-
-server_outbound_proxy_ros2 -> message_to_robot: Reads file and sends FileMessage to all boards
-
-message_to_robot -> inbound_proxy_ros2: Reads new goal
-inbound_proxy_ros2 -> ap_engine: Creates file with new goal
+app_storage -> ap_engine: Reads new goal
 activate ap_engine
     note top
         folder: from_user/goals
     end note
     ap_engine -> ap_engine: Computes and selects robot
-    ap_engine -> robot_writer: Creates file with new action
-    note top
-        folder: from_ap/to_robot/actions/#ROBOT
-    end note
-    ap_engine -> outbound_proxy_ros2: Creates file with new action
+    ap_engine -> app_storage: Creates file with new action
     note bottom
         folder: from_ap/to_web/actions/#ROBOT
     end note
 deactivate ap_engine
-robot_writer -> ap_goal: Creates ROS2 message with new goal
-ap_goal -> navigation_system: Reads new goal from ROS2 topic
-navigation_system -> robot: Sends to robot command to reach the goal
-note top
-    (using nav2 or custom navigator)
-end note
 
-... ...
-
-group loop every 0.X seconds
-    robot -> robot_reader: Reads information from robot
-    note top
-        percentage of battery, positions and goal state
-    end note
-    robot_reader -> ap_engine: Creates file with feedbacks
-    note top
-        folder: from_robot/#ROBOT/to_ap/feedback
-    end note
-    robot_reader -> outbound_proxy_ros2: Creates file with feedbacks
-    note top
-        folder: from_robot/#ROBOT/to_web/feedback
-    end note
-    outbound_proxy_ros2 -> message_from_robot: Creates ROS2 message with new feedbacks
-end
-
-message_from_robot -> server_inbound_proxy_ros2: Reads FileMessage from topic and transforms to feedback file
-
-group Read new feedbacks and update the status and position
-    activate java_server_service
-    java_server_service -> java_server_service: Read new feedbacks
-    note top
-        folder: from_robot/#ROBOT/to_web/feedback
-    end note
-    java_server_service -> java_server_service: Update state and position of robot
-    java_server_service -> java_server_db: Update DB
-    java_server_db --> java_server_service
-    deactivate java_server_service
-end
-
-message_from_robot -> server_inbound_proxy_ros2: Reads FileMessage from topic and transforms to action file
-
-group Read new actions and join the goal with robot chosen
-    activate java_server_service
-    java_server_service -> java_server_service: Read new actions
-    note top
-        folder: from_ap/to_web/actions/#ROBOT
-    end note
-    java_server_service -> java_server_service: Update goal state
-    java_server_service -> java_server_db: Update DB
-    java_server_db --> java_server_service
-    deactivate java_server_service
-end
+app_storage -> robot_writer: Parse action file
+robot_writer -> ap_goal: Creates ROS2 message with new action
+ap_goal -> navigation_system: Reads new action from ROS2 topic
+navigation_system -> robot: Sends command to robot to reach the goal
 
 == ... robot moved to goal ... ==
 
-user -> web_application: Wants to show updates of robots
-web_application -> java_server_api: GET /goals
-java_server_api -> java_server_service: Read data from database
-java_server_service -> java_server_db: Fetch data
-java_server_db --> java_server_service
-java_server_service --> java_server_api
-java_server_api --> web_application
-web_application --> user
+group Loop every 0.X seconds
+    robot -> robot_reader: Reads information from robot
+    robot_reader -> app_storage: Creates file with feedbacks
+    note top
+        folder: from_robot/#ROBOT/to_ap/feedback
+    end note
+end
+
+group Loop every 0.X seconds
+    app_storage -> ap_engine: Reads information from app_storage
+    note top
+        folder: from_robot/#ROBOT/to_ap/feedback
+    end note
+    ap_engine -> ap_engine: Updates goal state and information
+end
 
 @enduml
-
