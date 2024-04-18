@@ -564,11 +564,6 @@ namespace fcpp
                 std::cout << "MAIN FUNCTION in node " << node.uid << " of type " << nt << endl;
             }
 
-            field<int> test_nbr = fcpp::coordination::nbr(CALL, n_round);
-            if (AP_ENGINE_DEBUG) {
-                std::cout << "test_nbr_main_fn: " << test_nbr  << "; nbr_uid: " << nbr_uid(CALL) << std::endl;
-            }
-
             return nt;
         }
 
@@ -695,36 +690,6 @@ namespace fcpp
             });
         }
 
-        // PROCESS MANAGEMENT
-
-        //! @brief Spawn process from goal list acquired.
-        FUN spawn_result_type spawn_process(ARGS, node_type nt, ::vector<goal_tuple_type>& NewGoalsList, int n_round) {
-            // process new goals, emptying NewGoalsList
-            return coordination::spawn(CALL, [&](goal_tuple_type const& g){
-                status s = status::internal_output;
-
-                field<int> test_nbr = fcpp::coordination::nbr(CALL, n_round);
-                if (AP_ENGINE_DEBUG) {
-                    std::cout << "test_nbr_in_process: " << test_nbr << std::endl;
-                }
-
-                // ACTION: ABORT GOAL
-                if (ABORT_ACTION == common::get<goal_action>(g) && 
-                    node.storage(node_process_goal{}) == common::get<goal_code>(g) &&
-                    node.storage(node_ext_goal{}) == common::get<goal_code>(g)) {
-                    manage_action_abort(CALL, g, &s);
-                } 
-
-                // ACTION: REACH GOAL
-                else if (GOAL_ACTION == common::get<goal_action>(g)){
-                    manage_action_goal(CALL, nt, g, &s, n_round);
-                }
-
-                termination_logic(CALL, s, g);
-                return make_tuple(node.current_time(), s);
-            }, NewGoalsList);
-        }
-
         //! @brief Manage termination of the spawn processes.
         FUN void manage_termination(ARGS, node_type nt, spawn_result_type& r) {
             // if process was terminating and now it's terminated, we have to change state machine to IDLE 
@@ -787,12 +752,6 @@ namespace fcpp
                 // NEW GOALS
                 NewGoalsList, 
                 // RUN FOR EACH GOAL
-                field<int> test_nbr = fcpp::coordination::nbr(CALL, n_round); 
-
-                if (AP_ENGINE_DEBUG) { 
-                    std::cout << "test_nbr_in_process: " << test_nbr << std::endl; 
-                } 
-
                 if (ABORT_ACTION == common::get<goal_action>(g) && 
                     node.storage(node_process_goal{}) == common::get<goal_code>(g) && 
                     node.storage(node_ext_goal{}) == common::get<goal_code>(g)) { 
