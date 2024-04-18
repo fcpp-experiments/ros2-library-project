@@ -20,8 +20,8 @@
 #include "lib/common_data.hpp"
 #include "lib/ap_engine_setup.hpp"
 #include "lib/action_writer.hpp"
+#include "lib/process.hpp"
 
-// MACRO
 
 // DEFINES
 #define ANY_GOALS                "ANY"
@@ -784,10 +784,24 @@ namespace fcpp
             }
 
             // PROCESS MANAGEMENT
-            spawn_result_type r = spawn_process(CALL, nt, NewGoalsList, n_round);
+            PROCESS(
+                // NEW GOALS
+                NewGoalsList, 
+                // RUN FOR EACH GOAL
+                field<int> test_nbr = fcpp::coordination::nbr(CALL, n_round); 
 
-            manage_termination(CALL, nt, r);
-            
+                if (AP_ENGINE_DEBUG) { 
+                    std::cout << "test_nbr_in_process: " << test_nbr << std::endl; 
+                } 
+
+                if (ABORT_ACTION == common::get<goal_action>(g) && 
+                    node.storage(node_process_goal{}) == common::get<goal_code>(g) && 
+                    node.storage(node_ext_goal{}) == common::get<goal_code>(g)) { 
+                    manage_action_abort(CALL, g, &s); 
+                } else if (GOAL_ACTION == common::get<goal_action>(g)){ 
+                    manage_action_goal(CALL, nt, g, &s, n_round); 
+                } 
+            )            
         }
 
         //! @brief Export types used by the *_connection functions.
