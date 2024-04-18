@@ -1,9 +1,8 @@
 <CycloneDDS>
     <Domain>
         <General>
-            <!-- wifi interface of laptop: change according to your system -->
             <Interfaces>
-                <NetworkInterface name="wlp0s20f3" />
+                <NetworkInterface name="lo"/>
             </Interfaces>
             <AllowMulticast>true</AllowMulticast>
         </General>
