@@ -494,8 +494,7 @@ namespace fcpp
                 //     std::cout << "New rank found by node " << node.uid << " for " << common::get<goal_code>(g) << ": " << new_rank_tuple << std::endl;
                 // }
 
-                // if (nt == node_type::ROBOT && //i'm robot
-                //     ALG_USED == ElectionAlgorithm::GREEDY) { 
+                // if (nt == node_type::ROBOT && //i'm robot) { 
                 //     // detect if there will be other leaders in next round
                 //     detect_other_leaders(CALL, new_rank_tuple, computed_rank, percent_charge, current_rank, current_leader, current_leader_for_round, nt, g, s);
                 // }  
