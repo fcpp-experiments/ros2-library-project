@@ -257,10 +257,7 @@ namespace data {
     // [0] -> rank of previous leader
     // [1] -> node uid of previous leader
     // [2] -> counter of how many rounds the leader is
-    // [3] -> "lazy" leaders detection info
-    //      [0] -> node uid of other leader detected
-    //      [1] -> counter of how many rounds the detection info is stable
-    using rank_data_type = tuple<real_t, device_t, int, tuple<device_t, int>>;
+    using rank_data_type = tuple<real_t, device_t, int>;
 }
 
 //! @brief The general simulation options.
