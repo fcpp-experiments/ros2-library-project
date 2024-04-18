@@ -98,6 +98,5 @@ const string INPUT_FOLDER_FROM_ROBOTS_FEEDBACK          = string("from_robot/") 
 const string INPUT_FOLDER_FROM_USER_GOALS               = "from_user/goals";
 
 const string OUTPUT_FOLDER_TO_ROBOTS_ACTION             = string("from_ap/to_robot/actions/") + ROBOTS_PLACEHOLDER;
-const string OUTPUT_FOLDER_TO_WEB_ACTION                = string("from_ap/to_web/actions/") + ROBOTS_PLACEHOLDER;
 
 #endif
