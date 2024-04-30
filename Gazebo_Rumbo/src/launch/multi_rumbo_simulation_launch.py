@@ -161,7 +161,8 @@ def generate_launch_description():
                 parameters=[
                     {'x': robot['x_pose']},
                     {'y': robot['y_pose']},
-                    {'yaw': robot['yaw']}
+                    {'yaw': robot['yaw']},
+                    {'dock_enabled': dock_enabled}
                     ],
                 arguments=[TextSubstitution(text=robot['name'])]),
 
