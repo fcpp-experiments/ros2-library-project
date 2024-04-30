@@ -228,6 +228,7 @@ class Navigator(Node):
                 self.publish_feedback(self.current_goal_id, self.MSG_TYPE_NAV, self.GOAL_RUNNING)
                 time.sleep(1)
                 self.publish_feedback(self.current_goal_id, self.MSG_TYPE_NAV, self.GOAL_FAILED)
+                self.navigating = False
         if msg.type == 'HALLWAY':
             # Wait for self.navigation to fully activate, since autostarting nav2
             self.get_logger().info('Received HALLWAY goal')
