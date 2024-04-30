@@ -11,7 +11,7 @@ cd ./PoC/AP_Engine
 To run:
 ```bash
 cd ./PoC/AP_Engine/bin   
-AP_ALG_USED=GREEDY AP_ROUND_PERIOD=0.2 AP_WEARABLE_COUNT=0 AP_ROBOT_COUNT=5 AP_SIMULATOR_OFFSET_X=0.4 ./run/ap_engine
+AP_ROUND_PERIOD=0.5 AP_WEARABLE_COUNT=0 AP_ROBOT_COUNT=5 AP_SIMULATOR_OFFSET_X=0.4 ./run/ap_engine
 ```
 
 ## Simulation

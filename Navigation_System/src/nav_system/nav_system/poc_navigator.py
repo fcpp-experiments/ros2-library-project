@@ -57,7 +57,7 @@ class PocNavigator(Navigator):
         self.set_charge_battery_srv = self.create_client(SetCharge, 'gazebo_ros_battery/set_charge')
 
     def on_goal_start(self):
-        pass
+        self.nav.clearAllCostmaps()
 
     def on_hallway_start(self):
         pass

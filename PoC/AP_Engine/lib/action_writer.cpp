@@ -18,9 +18,10 @@ void action::manager::ActionManager::new_action(action::ActionData data) {
   auto now = std::chrono::high_resolution_clock::now();
   auto duration = now.time_since_epoch();
   auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+  auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
 
   std::stringstream ss;
-  ss << "action-" << milliseconds.count() << "-reliable.txt";
+  ss << "action-" << nanoseconds.count() << "-reliable.txt";
   std::string filename = ss.str();
   // set milliseconds to data
   data.milliseconds = milliseconds;

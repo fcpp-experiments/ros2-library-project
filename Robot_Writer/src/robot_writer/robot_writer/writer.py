@@ -87,32 +87,36 @@ class GoalPublisher(Node):
         path_actions_backup.mkdir(exist_ok=True, parents=True)
 
         path = path_actions.absolute()
-        for f in os.listdir(path):
-            if f.endswith('txt'):
-                with open(os.path.join(path, f), 'r') as action_file:
-                    reader = csv.reader(action_file, delimiter=DELIMITER)
-                    for row in reader:
-                        sx, sy, sqz, sqw = coords.abs2rel(float(row[3]), float(row[4]), float(row[5]),
-                                self.origin_x, self.origin_y, self.rotation)
-                        ex, ey, eqz, eqw = coords.abs2rel(float(row[6]), float(row[7]), float(row[8]),
-                                self.origin_x, self.origin_y, self.rotation)
-                        step = int(row[9])
-                        self.get_logger().debug('"computed coordinates %s"' % str([ex, ey, eqz, eqw]))
-                        actions.append({ 'action': row[0],
-                                'goal': row[1], 'robot': row[2],
-                                'pos_end_x': ex, 'pos_end_y': ey,
-                                'orientation_end_z': eqz, 'orientation_end_w': eqw,
-                                'pos_start_x': sx, 'pos_start_y': sy,
-                                'orientation_start_z': sqz, 'orientation_start_w': sqw,
-                                'step': step
-                                })
+
+        files = [f for f in os.listdir(path) if f.endswith('.txt')]
+        # sort files by (creation_time, file_name)
+        files_sorted = sorted(files, key=lambda f: (os.path.getctime(os.path.join(path, f)), f))
+
+        for file_name in files_sorted:
+            with open(os.path.join(path, file_name), 'r') as action_file:
+                reader = csv.reader(action_file, delimiter=DELIMITER)
+                for row in reader:
+                    sx, sy, sqz, sqw = coords.abs2rel(float(row[3]), float(row[4]), float(row[5]),
+                            self.origin_x, self.origin_y, self.rotation)
+                    ex, ey, eqz, eqw = coords.abs2rel(float(row[6]), float(row[7]), float(row[8]),
+                            self.origin_x, self.origin_y, self.rotation)
+                    step = int(row[9])
+                    self.get_logger().debug('"computed coordinates %s"' % str([ex, ey, eqz, eqw]))
+                    actions.append({ 'action': row[0],
+                            'goal': row[1], 'robot': row[2],
+                            'pos_end_x': ex, 'pos_end_y': ey,
+                            'orientation_end_z': eqz, 'orientation_end_w': eqw,
+                            'pos_start_x': sx, 'pos_start_y': sy,
+                            'orientation_start_z': sqz, 'orientation_start_w': sqw,
+                            'step': step
+                            })
                 if (os.path.isdir(os.path.join(path, 'backup')) and
-                        self.get_parameter('backup_storage').get_parameter_value().bool_value):
-                    os.replace(os.path.join(path, f), os.path.join(path, 'backup',
-                        datetime.now().isoformat(timespec='microseconds')+'-'+f))
+                    self.get_parameter('backup_storage').get_parameter_value().bool_value):
+                        os.replace(os.path.join(path, file_name), os.path.join(path, 'backup',
+                        file_name))
                 else:
                     try:
-                        os.remove(os.path.join(path, f))
+                        os.remove(os.path.join(path, file_name))
                     except FileNotFoundError:
                         self.get_logger().warn('Trying to delete nonexisting goal file')
 
