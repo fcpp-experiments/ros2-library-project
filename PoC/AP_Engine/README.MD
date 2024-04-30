@@ -5,18 +5,25 @@
 git submodule init
 git submodule update 
 ```
+## Script with preconfigured options
+```sh
+./ap_run.sh
+```
 
-## Build
+## Custom run
+
+### Build
 ```sh
 ./make.sh gui build ap_engine 
 ```
 
-## Run
+### Run
 ```sh
+# This version refreshes logs for each round
 ./make.sh gui run -O ap_engine 
 ```
 
-or
+or (without refresh logs for each round)
 
 ```sh
 cd bin
