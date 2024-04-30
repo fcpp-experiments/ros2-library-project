@@ -24,7 +24,7 @@ activate ap_engine
     ap_engine -> ap_engine: Computes and selects robot
     ap_engine -> app_storage: Creates file with new action
     note bottom
-        folder: from_ap/to_web/actions/#ROBOT
+        folder: from_ap/to_robot/actions/#ROBOT
     end note
 deactivate ap_engine
 

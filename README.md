@@ -40,18 +40,19 @@ cd PoC
 ./install.sh
 ```
 
-# Run
-
-## Simulation
-
-To launch a simulation execute from the root of the repository:
-
-```bash
-./PoC/rumbo_run.sh
-```
-
 The script will list the components that need to be compiled to run,
 enter the folders and follow compilation instructions.
+
+# Run
+To launch a simulation execute from the root of the repository:
+
+## Simulation
+You can use enable or disable automatic dock after reaching goal.    
+`$DOCK` can be 1 (disable), 2 (enable).
+
+```bash
+./PoC/rumbo_run.sh dock_enable:=$DOCK
+```
 
 ## AP Engine
 
@@ -72,7 +73,7 @@ cd PoC/AP_Engine
 ## Use case
 
 ### Goal
-To create a new goal with *X=$POS_X, Y=$POS_Y, YAW=$ORIENT* (all coordinates are float values), you can run:
+To create a new goal with *X=`$POS_X`, Y=`$POS_Y`, YAW=`$ORIENT`* (all coordinates are float values), you can run:
 ```bash
 cd Storage
 ./create_goal.sh "$POS_X;$POS_Y;$ORIENT"
@@ -84,7 +85,7 @@ example:
 ```
 
 ### Abort
-To abort a current with *ID=$GOAL_CODE*, you can run:
+To abort a current with *ID=`$GOAL_CODE`*, you can run:
 ```bash
 cd Storage
 ./create_abort.sh $GOAL_CODE
