@@ -98,9 +98,7 @@ def generate_launch_description():
                 'autostart': 'True',
                 'use_rviz': 'False',
                 'use_simulator': 'False',
-                #With value True global_costmap didn't work
                 'use_composition': 'False',
-                # LifeCycle manager won't configure restarted nodes
                 'use_respawn': 'False',
                 'headless': 'True',
                 }.items())
