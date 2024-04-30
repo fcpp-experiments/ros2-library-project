@@ -1,0 +1,8 @@
+var searchData=
+[
+  ['generate_5frobot_5fnames_538',['generate_robot_names',['../poc__utils_8cpp.html#a574b6fd69e82c50e81d76d7b31e90c77',1,'generate_robot_names(const std::string &amp;robot_prefix, const int start, const int robots_count):&#160;poc_utils.cpp'],['../poc__utils_8hpp.html#a574b6fd69e82c50e81d76d7b31e90c77',1,'generate_robot_names(const std::string &amp;robot_prefix, const int start, const int robots_count):&#160;poc_utils.cpp']]],
+  ['get_5falgorithm_539',['get_algorithm',['../classElectionAlgorithmMapper.html#a5955b47fc7aef161f5c921d5bab205e6',1,'ElectionAlgorithmMapper::get_algorithm()'],['../poc__utils_8hpp.html#a2ad03032871423e9bfdbb64d9af36e04',1,'get_algorithm(const std::string &amp;algorithm_name):&#160;poc_utils.hpp']]],
+  ['get_5fenv_5fvar_540',['get_env_var',['../poc__utils_8cpp.html#a5d31e1c0dd27ac47d9379464e5c73f68',1,'get_env_var(const char *env_key, const std::string &amp;default_value):&#160;poc_utils.cpp'],['../poc__utils_8hpp.html#a5d31e1c0dd27ac47d9379464e5c73f68',1,'get_env_var(const char *env_key, const std::string &amp;default_value):&#160;poc_utils.cpp']]],
+  ['get_5freal_5frobot_5fname_541',['get_real_robot_name',['../namespacefcpp_1_1coordination.html#aa9a0031fca91c955f755c1c961fa4b05',1,'fcpp::coordination']]],
+  ['get_5frobot_5fname_542',['get_robot_name',['../poc__utils_8cpp.html#a081be08e7bd7e555f1ac050fb49e3841',1,'get_robot_name(std::vector&lt; std::string &gt; robots, int node_uid):&#160;poc_utils.cpp'],['../poc__utils_8hpp.html#a081be08e7bd7e555f1ac050fb49e3841',1,'get_robot_name(std::vector&lt; std::string &gt; robots, int node_uid):&#160;poc_utils.cpp']]]
+];

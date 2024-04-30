@@ -1,0 +1,16 @@
+<CycloneDDS>
+    <Domain>
+        <General>
+            <Interfaces>
+                <NetworkInterface name="lo"/>
+            </Interfaces>
+            <AllowMulticast>true</AllowMulticast>
+        </General>
+        <Discovery>
+          <ParticipantIndex>auto</ParticipantIndex>
+          <MaxAutoParticipantIndex>100</MaxAutoParticipantIndex>
+        </Discovery>
+        <!-- uncomment to enable cyclonedds logging  -->
+        <!--<Tracing><Verbosity>config</Verbosity><OutputFile>stdout</OutputFile></Tracing>-->
+    </Domain>
+</CycloneDDS>

@@ -1,0 +1,137 @@
+@startuml
+hide empty member
+hide circle
+
+class "bringup_launch-py" as bringup {
+	namespace
+	use_namespace
+	slam
+	map
+	use_sim_time
+	params_file
+	autostart
+	use_composition
+	use_respawn
+	log_level
+	container_name
+}
+
+class "empty_world-launch-py" as empty {
+    	world
+    	verbose
+    	use_sim_time
+    	x_pose
+    	y_pose
+    	namespace
+}
+class "multi_tb3_simulation_launch-py" as multi {
+    	simulator
+    	world
+    	robots
+    	map
+    	tb3_template_params_file
+    	use_rviz
+    	use_respawn
+    	autostart
+    	rviz_config
+    	use_robot_state_pub
+    	decrease_battery
+    	namespace
+    	use_namespace
+    	slam
+    	use_sim_time
+    	params_file
+    	use_composition
+    	rviz_config_file
+    	use_simulator
+    	robot_name
+    	robot_sdf
+    	log_level
+    	container_name
+}
+class "turtlebot3_library-launch-py" as library {
+    	robots
+    	world
+    	map
+    	decrease_battery
+    	version
+    	verbose
+    	use_sim_time
+    	tb3_template_params_file
+    	use_rviz
+    	use_respawn
+    	autostart
+    	rviz_config
+    	use_robot_state_pub
+    	namespace
+    	use_namespace
+    	use_composition
+    	rviz_config_file
+    	use_simulator
+    	robot_name
+    	robot_sdf
+    	log_level
+    	container_name
+}
+class "turtlebot3_slam_library-launch-py" as slam_library {
+    	world
+    	version
+    	verbose
+    	params_file
+    	use_sim_time
+    	x_pose
+    	y_pose
+    	namespace
+
+}
+
+class "tb3_simulation_launch-py" as tb3 {
+    	namespace
+    	use_namespace
+    	slam
+    	map
+    	use_sim_time
+    	params_file
+    	autostart
+    	rviz_config_file
+    	use_rviz
+    	world
+    	robot_name
+    	robot_sdf
+    	use_respawn
+    	rviz_config
+    	log_level
+    	container_name
+}
+
+class "spawn_turtlebot3-launch-py" {
+    	x_pose
+    	y_pose
+    	namespace
+}
+
+bringup --> "localization_launch-py"
+bringup --> "navigation_launch-py"
+
+empty --> "gzserver-launch-py"
+empty --> "gzclient-launch-py"
+empty --> "robot_state_publisher-launch-py"
+empty --> "spawn_turtlebot3-launch-py"
+
+multi --> "rviz_launch-py"
+multi --> tb3
+
+tb3 --> "spawn_entity-py"
+tb3 --> "rviz_launch-py"
+tb3 --> bringup
+
+library --> "gzserver-launch-py"
+library --> "gzclient-launch-py"
+library --> "robot_state_publisher-launch-py"
+library --> multi
+
+slam_library --> "gzserver-launch-py"
+slam_library --> "gzclient-launch-py"
+slam_library --> "robot_state_publisher-launch-py"
+slam_library --> "spawn_turtlebot3-launch-py"
+@enduml

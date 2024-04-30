@@ -1,0 +1,54 @@
+@startuml
+!pragma teoz true
+autonumber
+
+actor User as user #LightPink
+participant "Storage" as app_storage #SkyBlue
+participant AP_Engine as ap_engine #LightCyan
+participant Robot_Writer as robot_writer #LightGreen
+queue ap_goal as ap_goal #LightYellow
+control Navigation_System as navigation_system #Moccasin
+participant Robot_reader as robot_reader #Orange
+actor Robot as robot #Grey
+
+user -> app_storage: Creates and deposits goal files
+note top
+    with action=GOAL
+end note
+
+app_storage -> ap_engine: Reads new goal
+activate ap_engine
+    note top
+        folder: from_user/goals
+    end note
+    ap_engine -> ap_engine: Computes and selects robot
+    ap_engine -> app_storage: Creates file with new action
+    note bottom
+        folder: from_ap/to_robot/actions/#ROBOT
+    end note
+deactivate ap_engine
+
+app_storage -> robot_writer: Parse action file
+robot_writer -> ap_goal: Creates ROS2 message with new action
+ap_goal -> navigation_system: Reads new action from ROS2 topic
+navigation_system -> robot: Sends command to robot to reach the goal
+
+== ... robot moved to goal ... ==
+
+group Loop every 0.X seconds
+    robot -> robot_reader: Reads information from robot
+    robot_reader -> app_storage: Creates file with feedbacks
+    note top
+        folder: from_robot/#ROBOT/to_ap/feedback
+    end note
+end
+
+group Loop every 0.X seconds
+    app_storage -> ap_engine: Reads information from app_storage
+    note top
+        folder: from_robot/#ROBOT/to_ap/feedback
+    end note
+    ap_engine -> ap_engine: Updates goal state and information
+end
+
+@enduml

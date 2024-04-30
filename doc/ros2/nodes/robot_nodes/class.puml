@@ -1,0 +1,131 @@
+@startuml
+hide empty member
+hide circle
+skinparam Linetype polyline
+
+package robot_writer {
+
+	class GoalPublisher {
+		publisher goal_publisher_
+		publisher abort_publisher_
+		timer timer
+		string namespace
+		float origin_x
+		float origin_y
+		float rotation
+		--constants--
+		const STORAGE_BASE_PATH
+		const ROBOT_PLACEHOLDER
+		const ROBOT_INPUT_PATH_FROM_AP
+		const DELIMITER
+		--ROS2 parameters--
+		bool param backup_storage
+		---
+		__init__(namespace, origin_x, origin_y, rotation)
+		timer_callback()
+		read_file(robot)
+	}
+	class robot_writer.coords {
+	  abs2rel(x, y, angle, origin_x, origin_y, rotation)
+	}
+note "Takes as ROS2 arguments:\n\t- namespace\n\t- initial x, y and rotation" as N1
+ N1 -right- GoalPublisher
+ GoalPublisher -right- robot_writer.coords: import
+ GoalPublisher -up- nav_system_interfaces.mgs.Goal: import
+ GoalPublisher -up- std_msgs.mgs.String: import
+ GoalPublisher -down-|> rclpy.node.Node: import
+}
+
+package robot_reader {
+	class RobotInformationReader {
+		string namespace
+		float origin_x
+		float origin_y
+		float rotation
+		timer timer
+		FeedbackWriter feedbackWriter
+		subscription subscription_odom
+		subscription subscription_battery
+		subscription subscription_goal
+		---
+		__init__(namespace, origin_x=0.0, origin_y=0.0, rotation=0.0)
+		listener_odom_callback(msg: Odometry)
+		listener_battery_callback(msg: BatteryState)
+		listener_goal_callback(msg: GoalDTO)
+		write_file()
+	}
+
+class BatteryDTO{
+	string robot
+	float percentage_charge
+	float temperature
+	float capacity
+	int power_supply_status
+	__str__ ()
+	__init__(robot, percentage_charge, temperature,
+		\tcapacity, power_supply_status)
+}
+class config{
+	ODOM_TOPIC="odom"
+	BATTERY_TOPIC="battery_state"
+	NAVIGATOR_TOPIC= "navigator_state"
+	DEFAULT_QOS_TOPIC= qos_profile_sensor_data
+	BATTERY_QOS_TOPIC= qos_profile_sensor_data
+	POLL_WRITER_SECONDS= 0.5
+	ROBOTS_PREFIX= "tb3_"
+	ROBOTS_LENGTH= 10
+	array ROBOTS
+}
+class coords{
+	rel2abs(x, y, qz, qw, origin_x, origin_y, rotation)
+}
+class FeedbackWriter{
+	__init__()
+	write_file(robot, position, battery, goal)
+	--constants--
+	STORAGE_BASE_PATH
+	ROBOT_PLACEHOLDER
+	ROBOT_OUTPUT_PATH_TO_AP
+	DELIMITER
+}
+class GoalDTO{
+	__init__(robot, goal_status)
+	int goal_status
+	string robot
+	__str__() 
+}
+class PositionDTO{
+	string robot
+	float pos_x
+	float pos_y
+	float orient_w
+	__init__(robot, pos_x, pos_y, orient_w)
+	__str__()
+}
+
+class Store{
+	__init__()
+	dict _dictionary
+}
+
+note "Takes as ROS2 arguments:\n\t- namespace\n\t- initial x, y and rotation" as N2
+ N2 -down- RobotInformationReader
+
+FeedbackWriter -- PositionDTO: import
+FeedbackWriter -- BatteryDTO: import
+FeedbackWriter -- GoalDTO: import
+Store -- PositionDTO: import
+Store -- BatteryDTO: import
+Store -- GoalDTO: import
+RobotInformationReader -- PositionDTO: import
+RobotInformationReader -- BatteryDTO: import
+RobotInformationReader -- GoalDTO: import
+RobotInformationReader -- FeedbackWriter: import
+RobotInformationReader -- Store: import
+RobotInformationReader -right- coords: import
+RobotInformationReader -left- config: import
+RobotInformationReader --|> rclpy.node.Node: import
+}
+
+
+@enduml

@@ -1,0 +1,5 @@
+<map id="robot_reader.odom_reader.OdomRobotInformationReader" name="robot_reader.odom_reader.OdomRobotInformationReader">
+<area shape="rect" id="node1" title="Class extending RobotInformationReader to receive position data from the /odom topic." alt="" coords="5,169,204,211"/>
+<area shape="rect" id="node2" href="$classrobot__reader_1_1reader_1_1RobotInformationReader.html" title="Class exteding ROS2 Node to receive sensor data from the robot and write it onto files to be used by ..." alt="" coords="18,80,191,121"/>
+<area shape="rect" id="node3" title=" " alt="" coords="78,5,131,32"/>
+</map>
