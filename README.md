@@ -73,7 +73,7 @@ cd PoC/AP_Engine
 ## Use case
 
 ### Goal
-To create a new goal with *X=$POS_X, Y=$POS_Y, YAW=$ORIENT* (all coordinates are float values), you can run:
+To create a new goal with *X=`$POS_X`, Y=`$POS_Y`, YAW=`$ORIENT`* (all coordinates are float values), you can run:
 ```bash
 cd Storage
 ./create_goal.sh "$POS_X;$POS_Y;$ORIENT"
@@ -85,7 +85,7 @@ example:
 ```
 
 ### Abort
-To abort a current with *ID=$GOAL_CODE*, you can run:
+To abort a current with *ID=`$GOAL_CODE`*, you can run:
 ```bash
 cd Storage
 ./create_abort.sh $GOAL_CODE
