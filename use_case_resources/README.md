@@ -1,32 +1,28 @@
 # How to run
-
+Execute commands from the root of repository.
 
 ## AP
-### Library
 To build:
 ```bash
-cd /home/robot/Documenti/projects/NODES/PoC/AP_Engine
-
+cd ./PoC/AP_Engine
 ./make.sh gui build -O -DAP_COMM_RANGE=5 ap_engine
 ```
 
 To run:
 ```bash
-cd /home/robot/Documenti/projects/NODES/PoC/AP_Engine      
-cd bin
-AP_ROUND_PERIOD=0.2 AP_WEARABLE_COUNT=0 AP_ROBOT_COUNT=5 AP_SIMULATOR_OFFSET_X=0.4 ./run/ap_engine
+cd ./PoC/AP_Engine/bin   
+AP_ROUND_PERIOD=0.5 AP_WEARABLE_COUNT=0 AP_ROBOT_COUNT=5 AP_SIMULATOR_OFFSET_X=0.4 ./run/ap_engine
 ```
 
 ## Simulation
-### Library
+You can use enable or disable automatic dock after reaching goal. `$DOCK` can be 1 (disable), 2 (enable).
+
 ```bash
-cd /home/robot/Documenti/projects/NODES/PoC
-./turtlebot3_run.sh
+./PoC/rumbo_run.sh dock_enable:=$DOCK
 ```
 
-
-### Out of order robot
+## Out of order robot
 ```bash
 # $ROBOT_NAME can be tb3_1, tb3_2 etc...
-./out_of_order.sh $ROBOT_NAME
+./PoC/out_of_order.sh $ROBOT_NAME
 ```

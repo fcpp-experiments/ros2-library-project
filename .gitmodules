@@ -10,7 +10,3 @@
 [submodule "Navigation_System/src/ldlidar_stl_ros2"]
 	path = Navigation_System/src/ldlidar_stl_ros2
 	url = https://github.com/Gior26/ldlidar_stl_ros2
-[submodule "Navigation_System/src/create3_examples"]
-	path = Navigation_System/src/create3_examples
-	url = git@github.com:Gior26/create3_examples.git
-	branch = humble
