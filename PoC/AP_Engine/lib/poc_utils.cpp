@@ -4,6 +4,42 @@
 
 using namespace std;
 
+//! @brief String representation of a ElectionAlgorithm.
+std::string to_string(ElectionAlgorithm ea) {
+    switch (ea) {
+        case ElectionAlgorithm::GREEDY:
+            return "GREEDY";
+
+        case ElectionAlgorithm::LAZY:
+            return "LAZY";
+
+        default:
+            return "";
+    }
+}
+
+ElectionAlgorithmMapper::ElectionAlgorithmMapper()
+{
+    algorithm_map[to_string(ElectionAlgorithm::GREEDY)] = ElectionAlgorithm::GREEDY;
+    algorithm_map[to_string(ElectionAlgorithm::LAZY)] = ElectionAlgorithm::LAZY;
+}
+
+ElectionAlgorithm ElectionAlgorithmMapper::get_algorithm(const std::string& algorithm_name) const
+{
+    auto it = algorithm_map.find(algorithm_name);
+    if (it != algorithm_map.end())
+    {
+        std::cerr << "Known algorithm " << algorithm_name << " to be used" << endl;
+        return it->second;
+    }
+    else
+    {
+        std::cerr << "Unknown algorithm " << algorithm_name << " to be used: so use default GREEDY alg" << endl;
+        // default
+        return ElectionAlgorithm::LAZY; 
+    }
+}
+
 std::string get_env_var(const char* env_key, const std::string& default_value) {
     const char* env_value = std::getenv(env_key);
     if (env_value != nullptr) {

@@ -16,5 +16,6 @@
         termination_logic(CALL, s, g); \
         return make_tuple(node.current_time(), s); \
     }, NewGoalsList); \
+    manage_termination(CALL, r); \
 
 #endif

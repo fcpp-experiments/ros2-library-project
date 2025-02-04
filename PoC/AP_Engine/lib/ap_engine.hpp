@@ -47,9 +47,8 @@ namespace fcpp
 
         //! @brief Blink color of node
         FUN void blink_computing_color(ARGS, int n_round) { CODE
-            // UNCOMMENT: BLINK COLOR
-            //fcpp::color computing_color = fcpp::color(fcpp::coordination::computing_colors[n_round%2]);
-            //change_color(CALL, computing_color);
+            fcpp::color computing_color = fcpp::color(fcpp::coordination::computing_colors[n_round%2]);
+            change_color(CALL, computing_color);
         }
 
         //! @brief Get robot name from AP node_uid
@@ -364,42 +363,40 @@ namespace fcpp
             action::manager::ActionManager::new_action(action_data);
         }
 
-        // UNCOMMENT: GREEDY VERSION
         //! @brief Detect if there are any other leaders near the elected robot.
         // If any exists, the worst node terminates his run.
-        // TODO: attention because at the moment "current_leader_for_round" it is resetted when another leader was found, so use it can be tricky
-        // FUN void detect_other_leaders(ARGS, tuple<real_t, device_t> new_rank_tuple, real_t rank, float percent_charge, real_t current_rank, device_t current_leader, int current_leader_for_round, node_type nt, goal_tuple_type const& g, status* s) { CODE
-        //     // get the leader of the next round
-        //     real_t rank_new_leader      = get<0>(new_rank_tuple);
-        //     device_t device_new_leader  = get<1>(new_rank_tuple);
+        FUN void detect_other_leaders(ARGS, tuple<real_t, device_t> new_rank_tuple, real_t rank, float percent_charge, real_t current_rank, device_t current_leader, int current_leader_for_round, node_type nt, goal_tuple_type const& g, status* s) { CODE
+            // get the leader of the next round
+            real_t rank_new_leader      = get<0>(new_rank_tuple);
+            device_t device_new_leader  = get<1>(new_rank_tuple);
 
-        //     if (node.storage(node_process_status{}) == ProcessingStatus::SELECTED && //if i'm already selected
-        //         node.storage(node_process_goal{}) == common::get<goal_code>(g) && // for the current goal
-        //         node.storage(node_ext_goal_status{}) != feedback::GoalStatus::ABORTED) {//but i'm not aborted
+            if (node.storage(node_process_status{}) == ProcessingStatus::SELECTED && //if i'm already selected
+                node.storage(node_process_goal{}) == common::get<goal_code>(g) && // for the current goal
+                node.storage(node_ext_goal_status{}) != feedback::GoalStatus::ABORTED) {//but i'm not aborted
 
-        //         // search if new leader found will send an action in the next round
-        //         if (device_new_leader != node.uid && // if i'm the old leader
-        //             rank_new_leader != INF) { // if new leader has a valid rank
-        //             std::cout << "Detected for goal " << common::get<goal_code>(g) << " other leader: "   << device_new_leader  << "(" << rank_new_leader << ",0) different from leader " << node.uid << "(" << rank <<", " << current_leader_for_round << ")"<< endl;
+                // search if new leader found will send an action in the next round
+                if (device_new_leader != node.uid && // if i'm the old leader
+                    rank_new_leader != INF) { // if new leader has a valid rank
+                    std::cout << "Detected for goal " << common::get<goal_code>(g) << " other leader: "   << device_new_leader  << "(" << rank_new_leader << ",0) different from leader " << node.uid << "(" << rank <<", " << current_leader_for_round << ")"<< endl;
 
-        //                 // abort myself if i have worst rank: worst means "other"<"me"
-        //                 if (rank_new_leader < rank || (rank_new_leader == rank && device_new_leader < node.uid)) {
-        //                     std::cout << "Abort current leader: "   << node.uid  << " from goal " << common::get<goal_code>(g) << endl;
-        //                     send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);
+                        // abort myself if i have worst rank: worst means "other"<"me"
+                        if (rank_new_leader < rank || (rank_new_leader == rank && device_new_leader < node.uid)) {
+                            std::cout << "Abort current leader: "   << node.uid  << " from goal " << common::get<goal_code>(g) << endl;
+                            send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);
 
-        //                     *s = status::border; // listen neighbours, but not send messages
-        //                 }
-        //         } else {
-        //             if (AP_ENGINE_DEBUG) {
-        //                 // std::cout << "Only one leader "   << " for goal " << common::get<goal_code>(g) << ": " << node.uid << endl;
-        //             }
-        //         }
-        //     } else {
-        //         if (AP_ENGINE_DEBUG) {
-        //             // std::cout << "Slave heart beat: goal " << common::get<goal_code>(g) << " node leader "   << device_new_leader << endl;
-        //         }
-        //     }
-        // }
+                            *s = status::border; // listen neighbours, but not send messages
+                        }
+                } else {
+                    if (AP_ENGINE_DEBUG) {
+                        // std::cout << "Only one leader "   << " for goal " << common::get<goal_code>(g) << ": " << node.uid << endl;
+                    }
+                }
+            } else {
+                if (AP_ENGINE_DEBUG) {
+                    // std::cout << "Slave heart beat: goal " << common::get<goal_code>(g) << " node leader "   << device_new_leader << endl;
+                }
+            }
+        }
                                 
         // ACTION
 
@@ -459,6 +456,32 @@ namespace fcpp
                 real_t computed_rank = INF;
                 computed_rank = run_rank_node(CALL, percent_charge, nt, g);   
 
+                real_t other_leader_rank = INF;
+                device_t other_leader_device = node.uid;
+                if (ALG_USED == ElectionAlgorithm::LAZY) {
+                    // get other leaders from all known network 
+                    bool im_running_goal = (
+                            (
+                                node.storage(node_process_status{}) == ProcessingStatus::SELECTED || //if i'm already selected
+                                node.storage(node_process_status{}) == ProcessingStatus::TERMINATING //or i'm terminating
+                            ) 
+                        &&
+                            node.storage(node_process_goal{}) == common::get<goal_code>(g) && // for the current goal
+                            node.storage(node_ext_goal_status{}) != feedback::GoalStatus::ABORTED // and different status from aborted
+                    );
+                    // use diameter_election to check other leaders
+                    tuple<real_t, device_t> tuple_leaders = fcpp::coordination::diameter_election(
+                        CALL, 
+                        mux(
+                            im_running_goal, 
+                            make_tuple(computed_rank, node.uid), // with rank of next round
+                            make_tuple(INF, node.uid)
+                        ),
+                        fcpp::coordination::graph_diameter
+                    );
+                    other_leader_rank = get<0>(tuple_leaders);
+                    other_leader_device = get<1>(tuple_leaders);
+                }
 
                 if (nt == node_type::ROBOT && //i'm robot
                     current_rank != INF && //i have computed something
@@ -478,40 +501,20 @@ namespace fcpp
                     blink_computing_color(CALL, n_round);
                 }
                 
-                // UNCOMMENT: DIAMETER ELECTION VERSION
                 // use diameter_election: send to neighbours result of diameter election and retrieve the best node for next round
-                // tuple<real_t, device_t> new_rank_tuple = fcpp::coordination::diameter_election(
-                //     CALL, 
-                //     make_tuple(computed_rank, node.uid), // with rank of next round
-                //     fcpp::coordination::graph_diameter
-                // );
+                tuple<real_t, device_t> new_rank_tuple = fcpp::coordination::diameter_election(
+                    CALL, 
+                    make_tuple(computed_rank, node.uid), // with rank of next round
+                    fcpp::coordination::graph_diameter
+                );
 
-                // UNCOMMENT: NBR VERSION
-                // use classic nbr: send to neighbours result of diameter election and retrieve the best node for next round
-                // tuple<real_t, device_t> new_rank_tuple = nbr(CALL, 
-                //     make_tuple(computed_rank, node.uid), 
-                //     [&](field<tuple<real_t, device_t>> f) {
-                //         return min_hood(CALL, f);
-                //     }
-                // );
-                // if (AP_ENGINE_DEBUG) {
-                //     std::cout << "New rank found by node " << node.uid << " for " << common::get<goal_code>(g) << ": " << new_rank_tuple << std::endl;
-                // }
-
-                // UNCOMMENT: GREEDY VERSION
-                // if (nt == node_type::ROBOT) { //i'm robot
-                //     // detect if there will be other leaders in next round
-                //     detect_other_leaders(CALL, new_rank_tuple, computed_rank, percent_charge, current_rank, current_leader, current_leader_for_round, nt, g, s);
-                // }  
-                // return make_tuple(  get<0>(new_rank_tuple),
-                //                     get<1>(new_rank_tuple),
-                //                     current_leader_for_round
-                // );
-
-                return make_tuple(
-                    0.0,
-                    node.uid,
-                    current_leader_for_round
+                if (nt == node_type::ROBOT) { //i'm robot
+                    // detect if there will be other leaders in next round
+                    detect_other_leaders(CALL, new_rank_tuple, computed_rank, percent_charge, current_rank, current_leader, current_leader_for_round, nt, g, s);
+                }  
+                return make_tuple(  get<0>(new_rank_tuple),
+                                    get<1>(new_rank_tuple),
+                                    current_leader_for_round
                 );
             });
         }
@@ -702,7 +705,7 @@ namespace fcpp
         }
 
         //! @brief Manage termination of the spawn processes.
-        FUN void manage_termination(ARGS, node_type nt, spawn_result_type& r) {
+        FUN void manage_termination(ARGS, spawn_result_type& r) {
             // if process was terminating and now it's terminated, we have to change state machine to IDLE 
             if (node.storage(node_process_status{}) == ProcessingStatus::TERMINATING) {
                 // if process has been terminated, it isn't in the result map of spawn
