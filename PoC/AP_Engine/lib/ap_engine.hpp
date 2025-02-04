@@ -13,6 +13,8 @@
 #include <string>
 #include <ctime>
 #include <cmath>
+#include <chrono>
+#include <ctime>
 
 #include "lib/poc_config.hpp"
 #include "lib/fcpp.hpp"
@@ -34,7 +36,26 @@ namespace fcpp
 
         using namespace fcpp::coordination::tags;
         using namespace fcpp::option::data;
+        using namespace std::chrono;
         using spawn_result_type = std::unordered_map<goal_tuple_type, times_t, fcpp::common::hash<goal_tuple_type>>;
+
+        // COMMON UTILS
+
+        system_clock::time_point now_timestamp() {
+            return std::chrono::system_clock::now();
+        }
+
+        //! @brief Compute the difference in milliseconds between now and argument_time
+        milliseconds ms_passed_from(system_clock::time_point check_time_point) {
+            auto now = now_timestamp();
+            return std::chrono::duration_cast<milliseconds>(now - check_time_point);
+        }
+
+        //! @brief Check if is passed "diff_time_ms" from argument time
+        bool is_ms_passed_from(long diff_time_ms, system_clock::time_point check_time_point) {
+            auto millis_computed = ms_passed_from(check_time_point);
+            return millis_computed >= std::chrono::milliseconds(diff_time_ms);
+        }
 
         // UTILS AP
 
@@ -58,14 +79,48 @@ namespace fcpp
 
         //! @brief Update in the storage the tag "node_ext_goal_update_info"
         FUN void update_last_goal_update_time(ARGS, std::string goal_code, feedback::GoalStatus goal_status) { CODE
-            std::time_t now = std::time(nullptr);
-            std::asctime(std::localtime(&now));
+            auto now = now_timestamp();
             fcpp::option::data::external_status_tuple_type ext_status_tuple = common::make_tagged_tuple<node_ext_goal_update_time, node_ext_goal_status>(
                     now,
                     goal_status
                 );
             node.storage(node_ext_goal_update_info{})[goal_code] = ext_status_tuple;
             node.storage(node_ext_goal_update_info{})[string(ANY_GOALS)] = ext_status_tuple;
+        }
+
+        //! @brief Check if is passed "diff_time_ms" milliseconds from last change status of robot
+        FUN milliseconds ms_passed_from_last_update(ARGS) { CODE
+            auto stored_time = common::get<node_ext_goal_update_time>(node.storage(node_ext_goal_update_info{})[string(ANY_GOALS)]);
+            return ms_passed_from(stored_time);
+        }
+
+        //! @brief Check if is passed "diff_time_ms" milliseconds from last change status of robot
+        FUN bool has_ms_passed_from_last_update(ARGS, long diff_time_ms) { CODE
+            auto& map = node.storage(node_ext_goal_update_info{});
+
+            auto it = map.find(string(ANY_GOALS));
+            if (it != map.end()) {
+                auto ext_status_tuple = it->second;
+                auto stored_time      = common::get<node_ext_goal_update_time>(ext_status_tuple);
+                return is_ms_passed_from(diff_time_ms, stored_time);
+            } else {
+                return false;
+            }
+        }
+
+        //! @brief Check if is passed "diff_time_ms" milliseconds from last change status of a specific goal owned by a robot
+        FUN bool has_ms_passed_from_goal_update(ARGS, long diff_time_ms, std::string goal_code, feedback::GoalStatus goal_status) { CODE
+            auto& map = node.storage(node_ext_goal_update_info{});
+
+            auto it = map.find(goal_code);
+            if (it != map.end()) {
+                auto ext_status_tuple = it->second;
+                auto stored_time      = common::get<node_ext_goal_update_time>(ext_status_tuple);
+                feedback::GoalStatus stored_goal_status     = common::get<node_ext_goal_status>(ext_status_tuple);
+                return stored_goal_status == goal_status && is_ms_passed_from(diff_time_ms, stored_time);
+            } else {
+                return false;
+            }
         }
 
         //! @brief Add current goal to computing map
@@ -291,6 +346,17 @@ namespace fcpp
         // AP PROCESS
 
         //! @brief A robot has reached a goal and now try to terminate the process
+        FUN void ends_processed_goal(ARGS,
+            node_type nt, goal_tuple_type const& g, status* s) { CODE
+                
+                std::cout << "Robot " << node.uid << " is trying to terminate goal " <<
+                    common::get<goal_code>(g) << endl;
+                std::cout << endl;
+                
+                *s = status::terminated_output; // stop propagation
+        }
+
+        //! @brief A robot has reached a goal and now try to terminate the process
         FUN rank_data_type ends_processed_goal(ARGS,
             real_t current_rank, int current_leader_for_round, 
             device_t current_lazy_detection_leader, int current_lazy_detection_stable_for_round, 
@@ -442,6 +508,24 @@ namespace fcpp
 
         //! @brief Manage when the user has requested a new GOAL
         FUN void manage_action_goal(ARGS, node_type nt, goal_tuple_type const& g, status* s, int n_round) { CODE
+
+            // if previously i already reached the end of the goal, terminates it
+            bool goal_already_completed = has_ms_passed_from_goal_update(CALL, 1, common::get<goal_code>(g), feedback::GoalStatus::REACHED) || 
+                                          has_ms_passed_from_goal_update(CALL, 1, common::get<goal_code>(g), feedback::GoalStatus::ABORTED);
+            bool goal_already_completed_from_other = any_hood(CALL, nbr(CALL, goal_already_completed));
+
+            if (goal_already_completed || goal_already_completed_from_other) {
+                std::cout << "Goal " << common::get<goal_code>(g) << " was already processed" << std::endl;  
+
+                if (nt == node_type::ROBOT) {
+                    // terminate process if i'm running already REACHED goal
+                    if (common::get<goal_code>(g) == node.storage(node_ext_goal{}) &&
+                        node.storage(node_ext_goal_status{}) == feedback::GoalStatus::RUNNING) {
+                        send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);    
+                    }
+                    return ends_processed_goal(CALL, nt, g, s);
+                }
+            }
             
             add_goal_to_computing_map(CALL, g);
             // make_tuple(real_t, device_t, int, make_tuple(device_t, int)):
@@ -629,8 +713,8 @@ namespace fcpp
 
         //! @brief Initialize variables (storage, etc...) of a kiosk.
         FUN void init_kiosk(ARGS) {
-            // init settings: move to 0.0.0
-            node.position() = make_vec(0,0,0); 
+            // init settings: move to configured position
+            node.position() = make_vec(AP_SIM_KIOSK_X, AP_SIM_KIOSK_Y, 0);
             node.storage(node_shape{}) = shape::cube;
             change_color(CALL, fcpp::color(RED));
             node.storage(node_size{})  = 0.1;
@@ -763,17 +847,24 @@ namespace fcpp
 
             // search on results if the computing processes has been terminated: 
             //  - if it's terminated (or in other words, if the goal it's not in the "r" variable), we delete it from the map in the storage
-            std::vector<std::string> goals_to_remove = {};
+            std::vector<goal_tuple_type> goals_to_remove = {};
             for (auto const& x : node.storage(node_process_computing_goals{}))
             {
                 auto g = x.second;
                 if (r.find(g) == r.end()){
                     // std::cout << "Remove process with code " << common::get<goal_code>(g) << endl;
-                    goals_to_remove.push_back(common::get<goal_code>(g));
+                    goals_to_remove.push_back(g);
                 } 
             }
-            for (auto const& gc : goals_to_remove) {
-                remove_goal_from_computing_map(CALL, gc);
+            for (auto const& g : goals_to_remove) {
+                // if i'm running an "terminated" goal, i have to stop
+                if (node.storage(node_ext_goal_status{}) == feedback::GoalStatus::RUNNING && 
+                    node.storage(node_ext_goal{}) == common::get<goal_code>(g)) {
+                    send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);
+                } else {
+                // otherwise, i have to remove goal from map
+                    remove_goal_from_computing_map(CALL, common::get<goal_code>(g));
+                }
             }
         }
 

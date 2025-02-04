@@ -44,6 +44,10 @@ const double DEFAULT_SIMULATOR_OFFSET_Y     = 0.0;
 const string AP_ALG_USED_KEY                = "AP_ALG_USED";
 const string DEFAULT_ALG_USED               = to_string(ElectionAlgorithm::LAZY);
 const string AP_CUSTOM_GRAPH_DIAMETER_KEY   = "AP_CUSTOM_GRAPH_DIAMETER";
+const string AP_SIM_KIOSK_X_KEY             = "AP_SIM_KIOSK_X";
+const double DEFAULT_SIM_KIOSK_X            = 0.0;
+const string AP_SIM_KIOSK_Y_KEY             = "AP_SIM_KIOSK_Y";
+const double DEFAULT_SIM_KIOSK_Y            = 0.0;
 const int DEFAULT_CUSTOM_GRAPH_DIAMETER     = NULL_INT_VALUE;
 const string AP_BG_IMAGE                    = "AP_BG_IMAGE";
 const string DEFAULT_BG_IMAGE               = "library.png";
@@ -59,6 +63,8 @@ const double SIMULATOR_OFFSET_X             = read_double_env(AP_SIMULATOR_OFFSE
 const double SIMULATOR_OFFSET_Y             = read_double_env(AP_SIMULATOR_OFFSET_Y_KEY, DEFAULT_SIMULATOR_OFFSET_Y);
 const std::string ALG_USED_STR              = read_string_env(AP_ALG_USED_KEY, DEFAULT_ALG_USED);
 const int CUSTOM_GRAPH_DIAMETER             = read_int_env(AP_CUSTOM_GRAPH_DIAMETER_KEY, DEFAULT_CUSTOM_GRAPH_DIAMETER);
+const double AP_SIM_KIOSK_X                 = read_double_env(AP_SIM_KIOSK_X_KEY, DEFAULT_SIM_KIOSK_X);
+const double AP_SIM_KIOSK_Y                 = read_double_env(AP_SIM_KIOSK_Y_KEY, DEFAULT_SIM_KIOSK_Y);
 const std::string BG_IMAGE                  = read_string_env(AP_BG_IMAGE, DEFAULT_BG_IMAGE);
 
 /* DEFINES */
@@ -70,6 +76,9 @@ const std::string BG_IMAGE                  = read_string_env(AP_BG_IMAGE, DEFAU
         #define FCPP_ENVIRONMENT            FCPP_ENVIRONMENT_SIMULATED
     #endif
     const std::vector<std::string> ROBOTS   = generate_robot_names(ROBOT_PREFIX, 1, ROBOTS_COUNT);
+#endif
+#ifndef AP_ENGINE_DEBUG
+    #define AP_ENGINE_DEBUG                 false
 #endif
 #ifndef AP_COMM_RANGE
     #define AP_COMM_RANGE                   AP_DEF_COMM_RANGE

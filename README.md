@@ -55,7 +55,7 @@ enter the folders and follow compilation instructions.
 
 ## AP Engine
 
-To compile and execute the AP engine , you should: 
+To compile and execute the AP engine with custom use case of library, you should: 
 - follow instructions on [/PoC/AP_Engine/README.MD](/PoC/AP_Engine/README.MD)
 - or run on a new terminal window (but with logs deleted after each round):
 ```bash
@@ -67,6 +67,15 @@ You can also pass as first argument (`true` or `false`) to clean build directory
 ```bash
 cd PoC/AP_Engine
 ./ap_run.sh true
+```
+
+### Network partition
+If you want to simulate a network partition, you can:
+- Run gazebo (see specific README)
+- Run AP with custom configuration to reduce communication range instead of "default" script described before:
+
+```bash
+./ap_run_network_partition.sh
 ```
 
 ## Use case
@@ -93,4 +102,13 @@ cd Storage
 example:
 ```
 ./create_abort.sh GOAL-123456789
+```
+
+### Out of order
+If you want to simulate a robot failure, you can run this script:
+```bash
+### Out of order robot
+```bash
+# $ROBOT_NAME can be tb3_1, tb3_2 etc...
+./out_of_order.sh $ROBOT_NAME
 ```

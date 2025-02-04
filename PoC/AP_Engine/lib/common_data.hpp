@@ -80,9 +80,9 @@ struct InputGoal {
     string subcode;
     int step;
 
-        //! @brief Equality operator.
+    //! @brief Equality operator.
     bool operator==(InputGoal const& m) const {
-        return goal_code == m.goal_code;
+        return goal_code == m.goal_code && action == m.action;
     }
 };
 
@@ -91,7 +91,7 @@ namespace std {
     struct hash<InputGoal> {
         //! @brief Produces an hash for a message, combining to and from into a size_t.
         size_t operator()(InputGoal const& m) const {
-            return std::hash<std::string>{}(m.goal_code);
+            return std::hash<std::string>{}(m.goal_code+m.action);
         }
     };
 }
