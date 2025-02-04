@@ -28,6 +28,7 @@ Export variables (prepend to run comand):
 - `AP_ROBOT_COUNT`: number of robots running in the simulation (DEFAULT: 5).
 - `AP_ROBOT_PREFIX`: prefix used to compute robot node (ex: tb3_ -> tb3_1, tb3_2, tb3_3 ecc...) (DEFAULT: tb3_)
 - `AP_ROUND_PERIOD`: period of a round in seconds (DEFAULT: 0.2)
+- `AP_ALG_USED`: type of algorithm used in AP Engine (DEFAULT: LAZY)
 - `AP_SIDE_X`: size of x-axis where robots run (DEFAULT: 5.3)
 - `AP_SIDE_Y`: size of x-axis where robots run (DEFAULT: 8.0)
 - `AP_ALG_USED`: type of algorithm used in AP Engine (DEFAULT: LAZY)

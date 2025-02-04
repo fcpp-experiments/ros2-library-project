@@ -10,4 +10,4 @@ fi
 echo "Compiling target ap_engine..."
 
 # Run AP with simulator
-AP_ROUND_PERIOD=0.5 AP_ROBOT_COUNT=5 ./make.sh gui run -O -DAP_ENGINE_DEBUG=true ap_engine
+AP_ALG_USED=LAZY AP_ROUND_PERIOD=0.25 AP_ROBOT_COUNT=5 ./make.sh gui run -O -DAP_ENGINE_DEBUG=true ap_engine
