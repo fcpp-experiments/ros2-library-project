@@ -117,3 +117,17 @@ If you want to simulate a robot failure, you can run this script:
 # $ROBOT_NAME can be tb3_1, tb3_2 etc...
 ./out_of_order.sh $ROBOT_NAME
 ```
+
+## World
+The world is a simulated library. The shelfs can be located at:
+
+| Bookshelf | Position         |
+|-----------|-----------------|
+| ID 8      | "0.2; 5.5; 1.57" |
+| ID 7      | "0.2; 5.0; -1.57" |
+| ID 6      | "0.2; 4.1; 1.57" |
+| ID 5      | "0.2; 3.5; -1.57" |
+| ID 4      | "0.2; 2.5; 1.57" |
+| ID 3      | "0.2; 2.0; -1.57" |
+| ID 2      | "0.2; 1.0; 1.57" |
+| ID 1      | "0.2; 0.3; -1.57" |
