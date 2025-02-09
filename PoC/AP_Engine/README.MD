@@ -42,17 +42,3 @@ CMake variables (to use at compile time):
 - `AP_COMM_RANGE`: max communication range of a node (DEFAULT: 5). To use, add to build argument `-DAP_COMM_RANGE=20`. To change config, you should run `./make.sh clean` before.
 - `AP_RETAIN_SEC`: retain time of messages of a node (DEFAULT: 2). To use, add to build argument `-ADP_RETAIN_SEC=2`. To change config, you should run `./make.sh clean` before.
 
-## World
-The world is a simulated library. The shelfs can be located at:
-
-| Bookshelf | Position         |
-|-----------|-----------------|
-| ID 8      | "0.2; 5.5; 1.57" |
-| ID 7      | "0.2; 5.0; -1.57" |
-| ID 6      | "0.2; 4.1; 1.57" |
-| ID 5      | "0.2; 3.5; -1.57" |
-| ID 4      | "0.2; 2.5; 1.57" |
-| ID 3      | "0.2; 2.0; -1.57" |
-| ID 2      | "0.2; 1.0; 1.57" |
-| ID 1      | "0.2; 0.3; -1.57" |
-
