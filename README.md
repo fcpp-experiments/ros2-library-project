@@ -77,6 +77,11 @@ If you want to simulate a network partition, you can:
 ```bash
 ./ap_run_network_partition.sh
 ```
+- Create a goal for shelf n°7:
+```bash
+cd Storage
+./create_goal.sh "0.2; 5.0; -1.57"
+```
 
 ## Use case
 
