@@ -518,7 +518,7 @@ namespace fcpp
                 std::cout << "Goal " << common::get<goal_code>(g) << " was already processed" << std::endl;  
 
                 if (nt == node_type::ROBOT) {
-                    // terminate process if i'm running already REACHED goal
+                    // terminate process if we (me or my neighbours) are already processed goal
                     if (common::get<goal_code>(g) == node.storage(node_ext_goal{}) &&
                         node.storage(node_ext_goal_status{}) == feedback::GoalStatus::RUNNING) {
                         send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);    
