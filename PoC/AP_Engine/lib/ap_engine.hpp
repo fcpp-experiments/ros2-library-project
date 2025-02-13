@@ -510,8 +510,7 @@ namespace fcpp
         FUN void manage_action_goal(ARGS, node_type nt, goal_tuple_type const& g, status* s, int n_round) { CODE
 
             // if previously i already reached the end of the goal, terminates it
-            bool goal_already_completed = has_ms_passed_from_goal_update(CALL, 1, common::get<goal_code>(g), feedback::GoalStatus::REACHED) || 
-                                          has_ms_passed_from_goal_update(CALL, 1, common::get<goal_code>(g), feedback::GoalStatus::ABORTED);
+            bool goal_already_completed = has_ms_passed_from_goal_update(CALL, 1, common::get<goal_code>(g), feedback::GoalStatus::REACHED);
             bool goal_already_completed_from_other = any_hood(CALL, nbr(CALL, goal_already_completed));
 
             if (goal_already_completed || goal_already_completed_from_other) {
