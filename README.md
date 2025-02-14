@@ -43,6 +43,15 @@ cd PoC
 The script will list the components that need to be compiled to run,
 enter the folders and follow compilation instructions.
 
+#### FCPP
+Install prerequisites on:
+
+- [/PoC/AP_Engine/README.MD](/PoC/AP_Engine/README.MD)
+- and install following dependencies:
+```bash
+sudo apt-get install clang libstdc++-12-dev
+```
+
 # Run
 To launch a simulation execute from the root of the repository:
 
@@ -52,15 +61,6 @@ You can use enable or disable automatic dock after reaching goal.
 
 ```bash
 ./PoC/rumbo_run.sh dock_enable:=$DOCK
-```
-
-#### FCPP
-Install prerequisites on:
-
-- [/PoC/AP_Engine/README.MD](/PoC/AP_Engine/README.MD)
-- and install following dependencies:
-```bash
-sudo apt-get install clang libstdc++-12-dev
 ```
 
 ## AP Engine
