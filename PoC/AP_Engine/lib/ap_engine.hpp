@@ -695,9 +695,7 @@ namespace fcpp
             } else if (node.uid <= ROBOTS.size()) {
                 nt = node_type::ROBOT;
             }
-            if (AP_ENGINE_DEBUG) {
-                std::cout << "MAIN FUNCTION in node " << node.uid << " of type " << nt << endl;
-            }
+            std::cout << "MAIN FUNCTION in node " << node.uid << " of type " << nt << endl;
 
             return nt;
         }
@@ -875,7 +873,6 @@ namespace fcpp
             int n_round = fcpp::coordination::counter(CALL);
 
             node_type nt = init_main_fn(CALL, n_round);
-            std::cout << "MAIN FUNCTION in node " << node.uid << " of type " << nt << endl;
 
             // UPDATE DATA
             acquire_new_goals(CALL, nt, NewGoalsList);  
