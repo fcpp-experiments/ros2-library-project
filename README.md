@@ -46,7 +46,7 @@ enter the folders and follow compilation instructions.
 #### FCPP
 Install prerequisites on:
 
-- [/PoC/AP_Engine/fcpp/README.md](/PoC/AP_Engine/fcpp/README.md)
+- [PoC/AP_Engine/fcpp/README.md](PoC/AP_Engine/fcpp/README.md)
 - and install following dependencies:
 ```bash
 sudo apt-get install clang libstdc++-12-dev
