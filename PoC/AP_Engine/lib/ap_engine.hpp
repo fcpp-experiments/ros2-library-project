@@ -875,6 +875,7 @@ namespace fcpp
             int n_round = fcpp::coordination::counter(CALL);
 
             node_type nt = init_main_fn(CALL, n_round);
+            std::cout << "MAIN FUNCTION in node " << node.uid << " of type " << nt << endl;
 
             // UPDATE DATA
             acquire_new_goals(CALL, nt, NewGoalsList);  
