@@ -54,6 +54,15 @@ You can use enable or disable automatic dock after reaching goal.
 ./PoC/rumbo_run.sh dock_enable:=$DOCK
 ```
 
+#### FCPP
+Install prerequisites on:
+
+- [/PoC/AP_Engine/README.MD](/PoC/AP_Engine/README.MD)
+- and install following dependencies:
+```bash
+sudo apt-get install clang libstdc++-12-dev
+```
+
 ## AP Engine
 
 To compile and execute the AP engine with library use case, you should: 
