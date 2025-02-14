@@ -37,8 +37,11 @@ apt install ros-humble-cyclonedds ros-humble-rmw-cyclonedds-cpp
 
 Add to your `.bashrc` file the cyclone config file (you should fix the path according with your project path):
 ```bash
-# set $PROJECT_PATH according with your installation
-export CYCLONEDDS_URI=$PROJECT_PATH/config/cyclone-dds-interface-select-minipc.xml
+# set $LIBRARY_PROJECT_PATH according with your installation
+export LIBRARY_PROJECT_PATH=XXXXXXX
+export CYCLONEDDS_URI=$LIBRARY_PROJECT_PATH/config/cyclone-dds-interface-select-minipc.xml
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$LIBRARY_PROJECT_PATH
 ```
 
 You should now run install script to build all ROS2 components:
