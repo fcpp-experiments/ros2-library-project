@@ -37,7 +37,7 @@ apt install ros-humble-cyclonedds ros-humble-rmw-cyclonedds-cpp
 
 Add to your `.bashrc` file the cyclone config file (you should fix the path according with your project path):
 ```bash
-# set $ROS2_PROJECT_PATH according with your installation
+# set $LIBRARY_PROJECT_PATH according with your installation
 export LIBRARY_PROJECT_PATH=XXXXXXX
 export CYCLONEDDS_URI=$LIBRARY_PROJECT_PATH/config/cyclone-dds-interface-select-minipc.xml
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
