@@ -107,7 +107,7 @@ example:
 ./create_goal.sh "1.0;2.0;3.14"
 ```
 
-### Abort
+### Abort a goal
 To abort a current with *ID=`$GOAL_CODE`*, you can run:
 ```bash
 cd Storage
@@ -119,7 +119,7 @@ example:
 ./create_abort.sh GOAL-123456789
 ```
 
-### Out of order
+### Out of order of a robot
 If you want to simulate a robot failure, you can run this script:
 ```bash
 ### Out of order robot
@@ -128,7 +128,7 @@ If you want to simulate a robot failure, you can run this script:
 ./out_of_order.sh $ROBOT_NAME
 ```
 
-## World
+## Library world
 The world is a simulated library. The shelfs can be located at:
 
 | Bookshelf | Position         |
