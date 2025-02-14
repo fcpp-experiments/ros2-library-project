@@ -856,7 +856,7 @@ namespace fcpp
                 } 
             }
             for (auto const& g : goals_to_remove) {
-                // if i'm running an "terminated" goal, i have to stop
+                // if i'm running a "terminated" goal, i have to stop
                 if (node.storage(node_ext_goal_status{}) == feedback::GoalStatus::RUNNING && 
                     node.storage(node_ext_goal{}) == common::get<goal_code>(g)) {
                     send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);
