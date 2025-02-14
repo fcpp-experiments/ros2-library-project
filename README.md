@@ -17,7 +17,7 @@ It can be viewed using [/doc/doxygen/html/index.html](/doc/doxygen/html/index.ht
 ## TL;DR
 
 ### Dependencies
-To run this application and bash scripts included, you should use an UNIX operating system. 
+To run this application and bash scripts included, you should use a UNIX operating system. 
 
 #### ROS 2
 
