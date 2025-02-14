@@ -95,7 +95,7 @@ cd Storage
 
 ## Use case
 
-### Goal
+### Library
 To create a new goal with *X=`$POS_X`, Y=`$POS_Y`, YAW=`$ORIENT`* (all coordinates are float values), you can run:
 ```bash
 cd Storage
