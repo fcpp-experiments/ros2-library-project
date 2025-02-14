@@ -17,12 +17,13 @@ It can be viewed using [/doc/doxygen/html/index.html](/doc/doxygen/html/index.ht
 ## TL;DR
 
 ### Dependencies
+To run this application and bash scripts included, you should use an UNIX operating system. 
 
 #### ROS 2
 
 [ROS 2 installation guide](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html)
   
-[ROS 2 DDS tuning](https://docs.ros.org/en/foxy/How-To-Guides/DDS-tuning.html)
+[ROS 2 DDS tuning](https://docs.ros.org/en/humble/How-To-Guides/DDS-tuning.html)
 
 ```bash
 # in ubuntu, before you should enable multiverse repository
@@ -32,6 +33,12 @@ apt install python3-colcon-common-extensions python3-vcstool python3-rosdep ros-
 
 # Cyclone DDS
 apt install ros-humble-cyclonedds ros-humble-rmw-cyclonedds-cpp
+```
+
+Add to your `.bashrc` file the cyclone config file (you should fix the path according with your project path):
+```bash
+# set $PROJECT_PATH according with your installation
+export CYCLONEDDS_URI=$PROJECT_PATH/config/cyclone-dds-interface-select-minipc.xml
 ```
 
 You should now run install script to build all ROS2 components:
