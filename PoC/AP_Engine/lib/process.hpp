@@ -17,5 +17,5 @@
         return make_tuple(node.current_time(), s); \
     }, NewGoalsList); \
     manage_termination(CALL, nt, r); \
-    
+
 #endif

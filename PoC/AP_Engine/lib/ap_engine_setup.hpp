@@ -9,6 +9,8 @@
 #define NODES_AP_ENGINE_SETUP_H_
 
 #include <cmath>
+#include <chrono>
+#include <ctime>
 #include "lib/poc_config.hpp"
 #include "lib/fcpp.hpp"
 
@@ -16,6 +18,8 @@
  * @brief Namespace containing all the objects in the FCPP library.
  */
 namespace fcpp {
+
+using namespace std::chrono;
 
 //! @cond INTERNAL
 namespace coordination {
@@ -250,14 +254,17 @@ namespace data {
     //! @brief A representation of goal properties using tagged_tuple
     using external_status_tuple_type = common::tagged_tuple_t<
         node_ext_goal_status, feedback::GoalStatus, 
-        node_ext_goal_update_time, time_t
+        node_ext_goal_update_time, system_clock::time_point
     >; 
 
     //! @brief A representation of rank data used in ap_engine
     // [0] -> rank of previous leader
     // [1] -> node uid of previous leader
     // [2] -> counter of how many rounds the leader is
-    using rank_data_type = tuple<real_t, device_t, int>;
+    // [3] -> "lazy" leaders detection info
+    //      [0] -> node uid of other leader detected
+    //      [1] -> counter of how many rounds the detection info is stable
+    using rank_data_type = tuple<real_t, device_t, int, tuple<device_t, int>>;
 }
 
 //! @brief The general simulation options.

@@ -56,7 +56,7 @@ You can use enable or disable automatic dock after reaching goal.
 
 ## AP Engine
 
-To compile and execute the AP engine , you should: 
+To compile and execute the AP engine with library use case, you should: 
 - follow instructions on [/PoC/AP_Engine/README.MD](/PoC/AP_Engine/README.MD)
 - or run on a new terminal window (but with logs deleted after each round):
 ```bash
@@ -68,6 +68,20 @@ You can also pass as first argument (`true` or `false`) to clean build directory
 ```bash
 cd PoC/AP_Engine
 ./ap_run.sh true
+```
+
+### Network partition
+If you want to simulate a network partition, you can:
+- Run gazebo (see specific README)
+- Run AP with custom configuration to reduce communication range instead of "default" script described before:
+
+```bash
+./ap_run_network_partition.sh
+```
+- Create a goal for shelf n°7:
+```bash
+cd Storage
+./create_goal.sh "0.2; 5.0; -1.57"
 ```
 
 ## Use case
@@ -95,3 +109,26 @@ example:
 ```
 ./create_abort.sh GOAL-123456789
 ```
+
+### Out of order
+If you want to simulate a robot failure, you can run this script:
+```bash
+### Out of order robot
+```bash
+# $ROBOT_NAME can be tb3_1, tb3_2 etc...
+./out_of_order.sh $ROBOT_NAME
+```
+
+## World
+The world is a simulated library. The shelfs can be located at:
+
+| Bookshelf | Position         |
+|-----------|-----------------|
+| ID 8      | "0.2; 5.5; 1.57" |
+| ID 7      | "0.2; 5.0; -1.57" |
+| ID 6      | "0.2; 4.1; 1.57" |
+| ID 5      | "0.2; 3.5; -1.57" |
+| ID 4      | "0.2; 2.5; 1.57" |
+| ID 3      | "0.2; 2.0; -1.57" |
+| ID 2      | "0.2; 1.0; 1.57" |
+| ID 1      | "0.2; 0.3; -1.57" |

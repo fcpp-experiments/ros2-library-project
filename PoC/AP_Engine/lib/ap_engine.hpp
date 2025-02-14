@@ -13,6 +13,8 @@
 #include <string>
 #include <ctime>
 #include <cmath>
+#include <chrono>
+#include <ctime>
 
 #include "lib/poc_config.hpp"
 #include "lib/fcpp.hpp"
@@ -34,7 +36,26 @@ namespace fcpp
 
         using namespace fcpp::coordination::tags;
         using namespace fcpp::option::data;
+        using namespace std::chrono;
         using spawn_result_type = std::unordered_map<goal_tuple_type, times_t, fcpp::common::hash<goal_tuple_type>>;
+
+        // COMMON UTILS
+
+        system_clock::time_point now_timestamp() {
+            return std::chrono::system_clock::now();
+        }
+
+        //! @brief Compute the difference in milliseconds between now and argument_time
+        milliseconds ms_passed_from(system_clock::time_point check_time_point) {
+            auto now = now_timestamp();
+            return std::chrono::duration_cast<milliseconds>(now - check_time_point);
+        }
+
+        //! @brief Check if is passed "diff_time_ms" from argument time
+        bool is_ms_passed_from(long diff_time_ms, system_clock::time_point check_time_point) {
+            auto millis_computed = ms_passed_from(check_time_point);
+            return millis_computed >= std::chrono::milliseconds(diff_time_ms);
+        }
 
         // UTILS AP
 
@@ -47,7 +68,8 @@ namespace fcpp
 
         //! @brief Blink color of node
         FUN void blink_computing_color(ARGS, int n_round) { CODE
-            // TODO: implement me
+            fcpp::color computing_color = fcpp::color(fcpp::coordination::computing_colors[n_round%2]);
+            change_color(CALL, computing_color);
         }
 
         //! @brief Get robot name from AP node_uid
@@ -57,14 +79,48 @@ namespace fcpp
 
         //! @brief Update in the storage the tag "node_ext_goal_update_info"
         FUN void update_last_goal_update_time(ARGS, std::string goal_code, feedback::GoalStatus goal_status) { CODE
-            std::time_t now = std::time(nullptr);
-            std::asctime(std::localtime(&now));
+            auto now = now_timestamp();
             fcpp::option::data::external_status_tuple_type ext_status_tuple = common::make_tagged_tuple<node_ext_goal_update_time, node_ext_goal_status>(
                     now,
                     goal_status
                 );
             node.storage(node_ext_goal_update_info{})[goal_code] = ext_status_tuple;
             node.storage(node_ext_goal_update_info{})[string(ANY_GOALS)] = ext_status_tuple;
+        }
+
+        //! @brief Check if is passed "diff_time_ms" milliseconds from last change status of robot
+        FUN milliseconds ms_passed_from_last_update(ARGS) { CODE
+            auto stored_time = common::get<node_ext_goal_update_time>(node.storage(node_ext_goal_update_info{})[string(ANY_GOALS)]);
+            return ms_passed_from(stored_time);
+        }
+
+        //! @brief Check if is passed "diff_time_ms" milliseconds from last change status of robot
+        FUN bool has_ms_passed_from_last_update(ARGS, long diff_time_ms) { CODE
+            auto& map = node.storage(node_ext_goal_update_info{});
+
+            auto it = map.find(string(ANY_GOALS));
+            if (it != map.end()) {
+                auto ext_status_tuple = it->second;
+                auto stored_time      = common::get<node_ext_goal_update_time>(ext_status_tuple);
+                return is_ms_passed_from(diff_time_ms, stored_time);
+            } else {
+                return false;
+            }
+        }
+
+        //! @brief Check if is passed "diff_time_ms" milliseconds from last change status of a specific goal owned by a robot
+        FUN bool has_ms_passed_from_goal_update(ARGS, long diff_time_ms, std::string goal_code, feedback::GoalStatus goal_status) { CODE
+            auto& map = node.storage(node_ext_goal_update_info{});
+
+            auto it = map.find(goal_code);
+            if (it != map.end()) {
+                auto ext_status_tuple = it->second;
+                auto stored_time      = common::get<node_ext_goal_update_time>(ext_status_tuple);
+                feedback::GoalStatus stored_goal_status     = common::get<node_ext_goal_status>(ext_status_tuple);
+                return stored_goal_status == goal_status && is_ms_passed_from(diff_time_ms, stored_time);
+            } else {
+                return false;
+            }
         }
 
         //! @brief Add current goal to computing map
@@ -290,8 +346,20 @@ namespace fcpp
         // AP PROCESS
 
         //! @brief A robot has reached a goal and now try to terminate the process
+        FUN void ends_processed_goal(ARGS,
+            node_type nt, goal_tuple_type const& g, status* s) { CODE
+
+                std::cout << "Robot " << node.uid << " is trying to terminate goal " <<
+                    common::get<goal_code>(g) << endl;
+                std::cout << endl;
+
+                *s = status::terminated_output; // stop propagation
+        }
+
+        //! @brief A robot has reached a goal and now try to terminate the process
         FUN rank_data_type ends_processed_goal(ARGS,
             real_t current_rank, int current_leader_for_round,
+            device_t current_lazy_detection_leader, int current_lazy_detection_stable_for_round,
             node_type nt, goal_tuple_type const& g, status* s) { CODE
                 
                 std::cout << "Robot " << node.uid << " is trying to terminate goal " <<
@@ -299,8 +367,8 @@ namespace fcpp
                 std::cout << endl;
                 
                 *s = status::terminated_output; // stop propagation
-                return make_tuple(
-                    current_rank, node.uid, current_leader_for_round
+                return make_tuple(current_rank, node.uid, current_leader_for_round,
+                    make_tuple(current_lazy_detection_leader, current_lazy_detection_stable_for_round)
                 );
         }
 
@@ -330,6 +398,30 @@ namespace fcpp
                 // resetting leader counter because i'm not selected
                 current_leader_for_round = 0;
             }
+        }
+
+        //! @brief Get current leaders known of network
+        FUN tuple<real_t, device_t> get_current_leaders(ARGS, real_t computed_rank, goal_tuple_type const& g) { CODE
+            bool im_running_goal = (
+                    (
+                        node.storage(node_process_status{}) == ProcessingStatus::SELECTED || //if i'm already selected
+                        node.storage(node_process_status{}) == ProcessingStatus::TERMINATING //or i'm terminating
+                    )
+                &&
+                    node.storage(node_process_goal{}) == common::get<goal_code>(g) && // for the current goal
+                    node.storage(node_ext_goal_status{}) != feedback::GoalStatus::ABORTED // and different status from aborted
+            );
+            // use diameter_election to check other leaders
+            tuple<real_t, device_t> tuple_leaders = fcpp::coordination::diameter_election(
+                CALL,
+                mux(
+                    im_running_goal,
+                    make_tuple(computed_rank, node.uid),
+                    make_tuple(INF, node.uid)
+                ),
+                fcpp::coordination::graph_diameter
+            );
+            return tuple_leaders;
         }
 
         //! @brief Send a GOAL action to selected node and update the AP state machine of the robot to SELECTED
@@ -362,6 +454,40 @@ namespace fcpp
             action::manager::ActionManager::new_action(action_data);
         }
 
+        //! @brief Detect if there are any other leaders near the elected robot.
+        // If any exists, the worst node terminates his run.
+        FUN void detect_other_leaders(ARGS, tuple<real_t, device_t> tuple_leaders, real_t rank, float percent_charge, real_t current_rank, device_t current_leader, int current_leader_for_round, node_type nt, goal_tuple_type const& g, status* s) { CODE
+            real_t rank_other_leader      = get<0>(tuple_leaders);
+            device_t device_other_leader  = get<1>(tuple_leaders);
+
+            if (node.storage(node_process_status{}) == ProcessingStatus::SELECTED && //if i'm already selected
+                node.storage(node_process_goal{}) == common::get<goal_code>(g) && // for the current goal
+                node.storage(node_ext_goal_status{}) != feedback::GoalStatus::ABORTED) {//but i'm not aborted
+
+                // search if there is an other leader
+                if (device_other_leader != node.uid && // if i'm the old leader
+                    rank_other_leader != INF) { // if new leader has a valid rank
+                    std::cout << "Detected for goal " << common::get<goal_code>(g) << " other leader: "   << device_other_leader  << "(" << rank_other_leader << ",0) different from leader " << node.uid << "(" << rank <<", " << current_leader_for_round << ")"<< endl;
+
+                        // abort myself if i have worst rank: worst means "other"<"me"
+                        if (rank_other_leader < rank || (rank_other_leader == rank && device_other_leader < node.uid)) {
+                            std::cout << "Abort current leader: "   << node.uid  << " from goal " << common::get<goal_code>(g) << endl;
+                            send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);
+
+                            *s = status::border; // listen neighbours, but not send messages
+                        }
+                } else {
+                    if (AP_ENGINE_DEBUG) {
+                        // std::cout << "Only one leader "   << " for goal " << common::get<goal_code>(g) << ": " << node.uid << endl;
+                    }
+                }
+            } else {
+                if (AP_ENGINE_DEBUG) {
+                    // std::cout << "Slave heart beat: goal " << common::get<goal_code>(g) << " node leader "   << device_other_leader << endl;
+                }
+            }
+        }
+                                
         // ACTION
 
         //! @brief Manage when the user has requested an ABORT of a goal
@@ -382,18 +508,40 @@ namespace fcpp
 
         //! @brief Manage when the user has requested a new GOAL
         FUN void manage_action_goal(ARGS, node_type nt, goal_tuple_type const& g, status* s, int n_round) { CODE
-            
+
+            // if previously i already reached the end of the goal, terminates it
+            bool goal_already_completed = has_ms_passed_from_goal_update(CALL, 1, common::get<goal_code>(g), feedback::GoalStatus::REACHED);
+            bool goal_already_completed_from_other = any_hood(CALL, nbr(CALL, goal_already_completed));
+
+            if (goal_already_completed || goal_already_completed_from_other) {
+                std::cout << "Goal " << common::get<goal_code>(g) << " was already processed" << std::endl;
+
+                if (nt == node_type::ROBOT) {
+                    // terminate process if we (me or my neighbours) are already processed goal
+                    if (common::get<goal_code>(g) == node.storage(node_ext_goal{}) &&
+                        node.storage(node_ext_goal_status{}) == feedback::GoalStatus::RUNNING) {
+                        send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);
+                    }
+                    return ends_processed_goal(CALL, nt, g, s);
+                }
+            }
+
             add_goal_to_computing_map(CALL, g);
             // make_tuple(real_t, device_t, int, make_tuple(device_t, int)):
             // [0] -> rank of current leader
             // [1] -> node uid of current leader
             // [2] -> counter of how many rounds the leader is
-            old(CALL, make_tuple(INF, node.uid, 0), [&] (rank_data_type current_rank_tuple) {
+            // [3] -> "lazy" leaders detection info
+            //      [0] -> node uid of other leader detected
+            //      [1] -> counter of how many rounds the detection info is stable
+            old(CALL, make_tuple(INF, node.uid, 0, make_tuple(node.uid, 0)), [&] (rank_data_type current_rank_tuple) {
 
                 // retrieve data collected from previous round
                 real_t current_rank = get<0>(current_rank_tuple);
                 device_t current_leader = get<1>(current_rank_tuple);
                 int current_leader_for_round = int(get<2>(current_rank_tuple));
+                device_t current_lazy_detection_leader = get<0>(get<3>(current_rank_tuple));
+                int current_lazy_detection_stable_for_round = int(get<1>(get<3>(current_rank_tuple)));
 
                 // compute charge of battery in percent
                 float percent_charge = node.storage(node_battery_charge{})/100.0;
@@ -404,7 +552,7 @@ namespace fcpp
                     if (common::get<goal_code>(g) == node.storage(node_process_goal{}) && //i was running current goal in the process
                         common::get<goal_code>(g) == node.storage(node_ext_goal{}) && //the robot was running current goal
                         ProcessingStatus::TERMINATING == node.storage(node_process_status{})) { //but now i'm terminating
-                        return ends_processed_goal(CALL, current_rank, current_leader_for_round, nt, g, s);
+                        return ends_processed_goal(CALL, current_rank, current_leader_for_round, current_lazy_detection_leader, current_lazy_detection_stable_for_round, nt, g, s);
                     } 
 
                     // if battery is empty, then stop at current position
@@ -420,6 +568,10 @@ namespace fcpp
                 real_t computed_rank = INF;
                 computed_rank = run_rank_node(CALL, percent_charge, nt, g);   
 
+                // get other leaders from all known network
+                tuple<real_t, device_t> tuple_leaders = get_current_leaders(CALL, computed_rank, g);
+                real_t other_leader_rank = get<0>(tuple_leaders);
+                device_t other_leader_device = get<1>(tuple_leaders);
 
                 if (nt == node_type::ROBOT && //i'm robot
                     current_rank != INF && //i have computed something
@@ -427,10 +579,36 @@ namespace fcpp
                     node.storage(node_process_status{}) == ProcessingStatus::IDLE && //i'm IDLE, so ready to go!
                     percent_charge > 0.0 && //i have sufficient battery
                     node.uid == current_leader && //i'm the best!
-                    current_leader_for_round >= 2) // for at least 2 round
+                    current_leader_for_round >= fcpp::coordination::graph_diameter) //selected as leader for sufficient rounds
                     { 
 
-                    send_action_to_selected_node(CALL, current_leader, g);
+                    if (ALG_USED == ElectionAlgorithm::LAZY) {
+                        if (other_leader_device == current_lazy_detection_leader) { // if it's equals to leader detected
+                            // increment the counter
+                            current_lazy_detection_stable_for_round++;
+                        }else {
+                            // otherwise reset the counter
+                            current_lazy_detection_stable_for_round = 0;
+                        }
+
+                        // use information about "other leaders" only if the value of "other_leader_rank" is stable:
+                        // we are conservative, because the value can be "not aligned"
+                        if (current_lazy_detection_stable_for_round >= fcpp::coordination::graph_diameter) { //the other leader is "stable" for N round
+                            if (other_leader_rank != INF) { // other leader computes valid rank
+                                std::cout << "Block action goal for node " << node.uid << " with rank " << current_rank << " for goal " << common::get<goal_code>(g) << " because there is another leader for consecutively " << current_lazy_detection_stable_for_round << " round: (" << other_leader_device  << ", " << other_leader_rank << ")" << endl;
+                            } else {
+                                send_action_to_selected_node(CALL, node.uid, g);
+                            }
+                        } else {
+                            std::cout << "Skip lazy leader detection for node " << node.uid << " because it's not stable yet" << endl;
+                        }
+
+                        // update previous other leader
+                        current_lazy_detection_leader = other_leader_device;
+                    } else {
+                        // if LAZY mode is not enabled, send action immediately
+                        send_action_to_selected_node(CALL, node.uid, g);
+                    }
                 }
 
                 // blinking colors if not running
@@ -439,11 +617,25 @@ namespace fcpp
                     blink_computing_color(CALL, n_round);
                 }
 
-                // i'm the leader!                
-                return make_tuple(
-                    0.0,
-                    node.uid,
-                    current_leader_for_round
+                if (nt == node_type::ROBOT) { //i'm robot
+                    // detect if there are other leaders
+                    detect_other_leaders(CALL, tuple_leaders, computed_rank, percent_charge, current_rank, current_leader, current_leader_for_round, nt, g, s);
+                }
+
+                // use diameter_election: send to neighbours result of diameter election and retrieve the best node for next round
+                tuple<real_t, device_t> new_rank_tuple = fcpp::coordination::diameter_election(
+                    CALL,
+                    make_tuple(computed_rank, node.uid), // with rank of next round
+                    fcpp::coordination::graph_diameter
+                );
+
+                return make_tuple(  get<0>(new_rank_tuple),
+                                    get<1>(new_rank_tuple),
+                                    current_leader_for_round,
+                                    make_tuple(
+                                        current_lazy_detection_leader,
+                                        current_lazy_detection_stable_for_round
+                                    )
                 );
             });
         }
@@ -520,8 +712,8 @@ namespace fcpp
 
         //! @brief Initialize variables (storage, etc...) of a kiosk.
         FUN void init_kiosk(ARGS) {
-            // init settings: move to 0.0.0
-            node.position() = make_vec(0,0,0); 
+            // init settings: move to configured position
+            node.position() = make_vec(AP_SIM_KIOSK_X, AP_SIM_KIOSK_Y, 0);
             node.storage(node_shape{}) = shape::cube;
             change_color(CALL, fcpp::color(RED));
             node.storage(node_size{})  = 0.1;
@@ -634,7 +826,7 @@ namespace fcpp
         }
 
         //! @brief Manage termination of the spawn processes.
-        FUN void manage_termination(ARGS, node_type nt, spawn_result_type& r) {
+        FUN void manage_termination(ARGS, spawn_result_type& r) {
             // if process was terminating and now it's terminated, we have to change state machine to IDLE 
             if (node.storage(node_process_status{}) == ProcessingStatus::TERMINATING) {
                 // if process has been terminated, it isn't in the result map of spawn
@@ -654,17 +846,24 @@ namespace fcpp
 
             // search on results if the computing processes has been terminated: 
             //  - if it's terminated (or in other words, if the goal it's not in the "r" variable), we delete it from the map in the storage
-            std::vector<std::string> goals_to_remove = {};
+            std::vector<goal_tuple_type> goals_to_remove = {};
             for (auto const& x : node.storage(node_process_computing_goals{}))
             {
                 auto g = x.second;
                 if (r.find(g) == r.end()){
                     // std::cout << "Remove process with code " << common::get<goal_code>(g) << endl;
-                    goals_to_remove.push_back(common::get<goal_code>(g));
+                    goals_to_remove.push_back(g);
                 } 
             }
-            for (auto const& gc : goals_to_remove) {
-                remove_goal_from_computing_map(CALL, gc);
+            for (auto const& g : goals_to_remove) {
+                // if i'm running a "terminated" goal, i have to stop
+                if (node.storage(node_ext_goal_status{}) == feedback::GoalStatus::RUNNING &&
+                    node.storage(node_ext_goal{}) == common::get<goal_code>(g)) {
+                    send_stop_command_to_robot(CALL, "ABORT", node.uid, g, ProcessingStatus::IDLE);
+                } else {
+                // otherwise, i have to remove goal from map
+                    remove_goal_from_computing_map(CALL, common::get<goal_code>(g));
+                }
             }
         }
 

@@ -35,6 +35,7 @@ Export variables (prepend to run comand):
 - `AP_ROBOT_COUNT`: number of robots running in the simulation (DEFAULT: 5).
 - `AP_ROBOT_PREFIX`: prefix used to compute robot node (ex: tb3_ -> tb3_1, tb3_2, tb3_3 ecc...) (DEFAULT: tb3_)
 - `AP_ROUND_PERIOD`: period of a round in seconds (DEFAULT: 0.2)
+- `AP_ALG_USED`: type of algorithm used in AP Engine (DEFAULT: LAZY)
 - `AP_SIDE_X`: size of x-axis where robots run (DEFAULT: 5.3)
 - `AP_SIDE_Y`: size of x-axis where robots run (DEFAULT: 8.0)
 - `AP_ALG_USED`: type of algorithm used in AP Engine (DEFAULT: LAZY)
@@ -47,3 +48,4 @@ CMake variables (to use at compile time):
 - `AP_ENGINE_DEBUG`: enable/disable log of AP_Engine (DEFAULT: false). To use, add to build argument `-DAP_ENGINE_DEBUG=false`. To change config, you should run `./make.sh clean` before.
 - `AP_COMM_RANGE`: max communication range of a node (DEFAULT: 5). To use, add to build argument `-DAP_COMM_RANGE=20`. To change config, you should run `./make.sh clean` before.
 - `AP_RETAIN_SEC`: retain time of messages of a node (DEFAULT: 2). To use, add to build argument `-ADP_RETAIN_SEC=2`. To change config, you should run `./make.sh clean` before.
+
