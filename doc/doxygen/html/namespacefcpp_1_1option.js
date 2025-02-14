@@ -1,7 +1,7 @@
 var namespacefcpp_1_1option =
 [
     [ "data", "namespacefcpp_1_1option_1_1data.html", [
-      [ "external_status_tuple_type", "namespacefcpp_1_1option_1_1data.html#a379f411c7873cf45595d5f82778d4e2b", null ],
+      [ "external_status_tuple_type", "namespacefcpp_1_1option_1_1data.html#a37b23ca8b615d8e60532b48c9a98dc73", null ],
       [ "goal_tuple_type", "namespacefcpp_1_1option_1_1data.html#a7102973ff5d37d7a3db5d6c868ab7d88", null ],
       [ "rank_data_type", "namespacefcpp_1_1option_1_1data.html#adccc97e5627aea5bb55cf4c83c5602be", null ]
     ] ],

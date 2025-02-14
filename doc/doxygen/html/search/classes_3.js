@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['electionalgorithmmapper_405',['ElectionAlgorithmMapper',['../classElectionAlgorithmMapper.html',1,'']]]
+  ['electionalgorithmmapper_703',['ElectionAlgorithmMapper',['../classElectionAlgorithmMapper.html',1,'']]]
 ];

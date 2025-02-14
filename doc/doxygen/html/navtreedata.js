@@ -41,9 +41,11 @@ var NAVTREE =
       [ "Class Index", "classes.html", null ],
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
       [ "Class Members", "functions.html", [
-        [ "All", "functions.html", null ],
+        [ "All", "functions.html", "functions_dup" ],
         [ "Functions", "functions_func.html", null ],
-        [ "Variables", "functions_vars.html", null ]
+        [ "Variables", "functions_vars.html", null ],
+        [ "Enumerations", "functions_enum.html", null ],
+        [ "Enumerator", "functions_eval.html", null ]
       ] ]
     ] ],
     [ "Files", "files.html", [
@@ -61,9 +63,11 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"CMakeCCompilerId_8c.html",
-"dir_d20f4ccebeee062647068714c9449d3d.html",
-"poc__config_8hpp.html#aed16d79238e2f751968ef316af882891"
+"",
+"classgazebo_1_1GazeboRosBatteryPrivate.html#ad10b6bd25f8f6fe77757f3e086b31c10",
+"dir_e9d5318975a9ccfbda6b37d4574576bd.html",
+"namespaceldlidar.html#a0cd81996d0ab9bb8b52c06bb5796f2b7",
+"structRobotStatus.html#a7590328e1262533ee60a4b580a53885b"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

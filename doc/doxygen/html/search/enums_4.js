@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['processingstatus_753',['ProcessingStatus',['../common__data_8hpp.html#ad382be1a0583b9c675deee416c52b4a8',1,'common_data.hpp']]]
+  ['ldtype_1296',['LDType',['../namespaceldlidar.html#af712d1a7890914df199cbf5fb4b74f14',1,'ldlidar']]],
+  ['lidarstatus_1297',['LidarStatus',['../namespaceldlidar.html#ab76d3a30bfb2cea1715af1066e6ade29',1,'ldlidar']]],
+  ['loglevel_1298',['LogLevel',['../classLogModule.html#ad43650a9dabd882ad9718b0eceaa2a0d',1,'LogModule']]]
 ];
