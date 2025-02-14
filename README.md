@@ -1,5 +1,5 @@
-# ROS2 Sample Project
-Components for ROS2 Sample Project
+# ROS2 Library Project
+Components for ROS2 Library Project
 
 ## Documentation
 
