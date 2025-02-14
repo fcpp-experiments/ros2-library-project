@@ -123,7 +123,6 @@ example:
 If you want to simulate a robot failure, you can run this script:
 ```bash
 ### Out of order robot
-```bash
 # $ROBOT_NAME can be tb3_1, tb3_2 etc...
 ./out_of_order.sh $ROBOT_NAME
 ```
