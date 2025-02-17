@@ -1,8 +1,5 @@
 var NAVTREEINDEX0 =
 {
-"":[0,0,7],
-"":[0,0,8],
-"":[0,0,9],
 "CMakeCCompilerId_8c.html":[2,0,2,0,0,0,0,0,0],
 "CMakeCCompilerId_8c.html#a0ddf1224851353fc92bfbff6f499fa97":[2,0,2,0,0,0,0,0,0,9],
 "CMakeCCompilerId_8c.html#a0f46a8a39e09d9b803c4766904fd7e99":[2,0,2,0,0,0,0,0,0,12],
@@ -249,5 +246,8 @@ var NAVTREEINDEX0 =
 "classgazebo_1_1GazeboRosBatteryPrivate.html#abeb104a18607ac9349f251cec2372a85":[1,0,2,1,61],
 "classgazebo_1_1GazeboRosBatteryPrivate.html#ac050366ab244a44a5ccd40942394c6ef":[1,0,2,1,2],
 "classgazebo_1_1GazeboRosBatteryPrivate.html#acc6113c92903f0efb95109d80a296a21":[1,0,2,1,51],
-"classgazebo_1_1GazeboRosBatteryPrivate.html#ace3493f20273b863fd403204e2d61680":[1,0,2,1,48]
+"classgazebo_1_1GazeboRosBatteryPrivate.html#ace3493f20273b863fd403204e2d61680":[1,0,2,1,48],
+"classgazebo_1_1GazeboRosBatteryPrivate.html#ad10b6bd25f8f6fe77757f3e086b31c10":[1,0,2,1,11],
+"classgazebo_1_1GazeboRosBatteryPrivate.html#ad3ca1ce7eb6d035374ed61a487020ef7":[1,0,2,1,34],
+"classgazebo_1_1GazeboRosBatteryPrivate.html#ae35c1d09f5b27a072b1d793e758d2286":[1,0,2,1,5]
 };
