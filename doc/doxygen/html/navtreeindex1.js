@@ -1,8 +1,5 @@
 var NAVTREEINDEX1 =
 {
-"classgazebo_1_1GazeboRosBatteryPrivate.html#ad10b6bd25f8f6fe77757f3e086b31c10":[1,0,2,1,11],
-"classgazebo_1_1GazeboRosBatteryPrivate.html#ad3ca1ce7eb6d035374ed61a487020ef7":[1,0,2,1,34],
-"classgazebo_1_1GazeboRosBatteryPrivate.html#ae35c1d09f5b27a072b1d793e758d2286":[1,0,2,1,5],
 "classgazebo_1_1GazeboRosBatteryPrivate.html#ae3d7d4235608d623b4dd616196848166":[1,0,2,1,20],
 "classgazebo_1_1GazeboRosBatteryPrivate.html#ae599407cac382b6278b2ff4c1260326e":[1,0,2,1,50],
 "classgazebo_1_1GazeboRosBatteryPrivate.html#aef4e700e49ee56907ef9bc6e14398478":[1,0,2,1,33],
@@ -249,5 +246,8 @@ var NAVTREEINDEX1 =
 "dir_dc9e76b8d767069bc018f3ef1de9bc9d.html":[2,0,1,0,0,1,0,1],
 "dir_e208ba3c6cfaf7c2bd44979d9c27df94.html":[2,0,3,0,0],
 "dir_e383c1d8941c7b53bae672fd45839ce4.html":[2,0,2,0,0,0,0],
-"dir_e3a4168554fe1406c677f04bbedeca14.html":[2,0,1,0,0,1,1,4]
+"dir_e3a4168554fe1406c677f04bbedeca14.html":[2,0,1,0,0,1,1,4],
+"dir_e9d5318975a9ccfbda6b37d4574576bd.html":[2,0,3],
+"dir_fdb3ddfe102b0287be25a8d7aae387c2.html":[2,0,1,0,0,1],
+"dir_fe01412f74ac8249a2441d37383cb508.html":[2,0,2,0,2]
 };
